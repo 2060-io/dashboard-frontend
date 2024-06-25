@@ -1,17 +1,32 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React, { ChangeEvent, useEffect, useState } from 'react';
 import { DtsListPostRequest, DtsResourceApi } from '../../openapi-client/apis/DtsResourceApi'; 
 import { DtsFilterFromJSON, DtsTemplateVO, DtsVO, EntityState } from '../../openapi-client/models';
 import { DtsFilter } from '../../openapi-client/models';
 import { Configuration, ConfigurationParameters, DtsTemplateResourceApi } from '../../openapi-client';
 import { useAuth } from "react-oidc-context";
-import { Log } from 'oidc-client-ts';
 import { usePathname } from 'next/navigation';
 import SelectDtsTemplate from '../Templates/SelectDtsTemplate';
 import {v4 as uuidv4} from 'uuid';
+import Ajv from 'ajv';
+import { load } from 'js-yaml';
 
-
+type ApiGitHub = {
+  name: string;
+  type: string;
+}
+type TemplateInfo = {
+  name: string; 
+  value: string; 
+  schema?:string|null;
+}
+type SchemaConfig = {
+  config: {
+    path: string;
+    branch: string;
+  }
+}
 
 
 function DtsViewEdit() {
@@ -24,11 +39,75 @@ function DtsViewEdit() {
 
   const [dtsTemplateVOs, setDtsTemplateVOs] = useState<DtsTemplateVO[]>([]);
   const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
+  const [templateNames, setTemplateNames] = useState<TemplateInfo[]>([]);
+  const [selectedOption, setSelectedOption] = useState<string>('');
 
-  const changeTextColor = () => {
+  const handleChange = async (e: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedOption(e.target.value);
     setIsOptionSelected(true);
+    const newValue = await readGithubValue(`${process.env.TEMPLATE_DIR}/${process.env.TEMPLATE_BRANCH}/${e.target.value}/template.yml`);
+    setDtsTemplateVOs(dtsTemplateVOs.map((item) => {
+      if (item?.id === dtsVO?.templateFk) {
+        return { ...item, yaml: newValue };
+      }
+      return item;
+    }));
+  };
+
+  const readGithubValue = async (name:String) => {
+    try {
+      const urlFile = `https://raw.githubusercontent.com/${name}`;
+      
+      const res = await fetch(urlFile);
+      return await res.text();
+    } catch (error) {
+      console.error('Error loading file:', error);
+      return '';
+    }
   };
   
+  const checkConfigStructure = async (e: ChangeEvent<HTMLTextAreaElement>) =>{
+    setDtsVO({...dtsVO, config: e.target.value});
+    try {
+      const file: SchemaConfig = JSON.parse(await readGithubValue(`${process.env.TEMPLATE_DIR}/${process.env.TEMPLATE_BRANCH}/${process.env.TEMPLATE_SCHEMA_DIR}`)) as SchemaConfig;
+  
+      if(file && file.config && typeof file.config === 'object'){
+        const ajv = new Ajv();
+        const schemaDefault = await readGithubValue(`${file.config.path}/${file.config.branch}/schema.json`);
+        const validate = ajv.compile(JSON.parse(schemaDefault ?? ''));
+        const jsonData = load(e.target.value);
+    
+        const valid = validate(jsonData);
+        if (valid) {
+          setDtsVO({...dtsVO, config: e.target.value})
+        } else {
+          console.log('Errores de validación:', validate.errors);
+        }
+      }
+    } catch (error) {
+      console.error("checkConfigStructure: Error: " ,error)
+    }
+  }
+
+  const listTemplateNames = async () => {
+    try {
+        const response = await fetch(`https://api.github.com/repos/${process.env.TEMPLATE_DIR??''}/contents`);
+        const data: ApiGitHub[] = await response.json();
+        const folders = data.filter((item:ApiGitHub) => item.type === 'dir' && !item.name.startsWith('.'));
+        
+        let templates: TemplateInfo[] = folders.map(folder => ({
+            name: folder.name,
+            value: folder.name,
+            schema: folder.name === "Fastbot" ? process.env.TEMPLATE_DIR : null
+        }));
+        const currentTemplate = { name: "Current", value: "current", schema:null };
+        templates = [currentTemplate, ...templates];
+
+      setTemplateNames(templates);
+    } catch (error) {
+        console.error('Error fetching templates:', error);
+    }
+}
   
   
   let idinurl = pathname.replace("/services/", "");
@@ -41,7 +120,7 @@ function DtsViewEdit() {
         'Authorization': 'Bearer ' + auth.user?.access_token ,
         
       },
-      basePath: 'http://localhost:2601/',
+      basePath: process.env.BACKEND_BASE_PATH,
     };
     
   
@@ -52,12 +131,16 @@ function DtsViewEdit() {
     apiDtst.dtstListPost({}).then((resp) => setDtsTemplateVOs(resp));
   }
 
+
+   
+   
    
   useEffect(() => {
     console.log("going here " + auth.isAuthenticated);
     if (auth.isAuthenticated) {
       
       listDtsTemplateVOs();
+      listTemplateNames();
     }
     
 
@@ -76,7 +159,7 @@ function DtsViewEdit() {
           'Authorization': 'Bearer ' + auth.user?.access_token ,
           
         },
-        basePath: 'http://localhost:2601/',
+        basePath: process.env.BACKEND_BASE_PATH,
       };
       
     
@@ -129,7 +212,7 @@ function DtsViewEdit() {
         'Authorization': 'Bearer ' + auth.user?.access_token ,
         
       },
-      basePath: 'http://localhost:2601/',
+      basePath: process.env.BACKEND_BASE_PATH,
     };
     
   
@@ -139,8 +222,24 @@ function DtsViewEdit() {
    
     
     api.dtsSavePost({ dtsVO: dtsVO });
+  }
+
+  function saveDtsTemplateVO() {
+    if(selectedOption !== 'current'){
+      const templateVO = dtsTemplateVOs.find(t => t.id === dtsVO?.templateFk);
+      const configParameters: ConfigurationParameters = {
+        headers: {
+          'Authorization': 'Bearer ' + auth.user?.access_token ,
+          
+        },
+        basePath: process.env.BACKEND_BASE_PATH,
+      };
   
-    
+      const config = new Configuration(configParameters);
+      const api = new DtsTemplateResourceApi(config);
+      
+      templateVO && api.dtstSavePost({ dtsTemplateVO: templateVO });
+    }
   }
   
   
@@ -195,12 +294,8 @@ function DtsViewEdit() {
 
       <div className="relative z-20 bg-transparent dark:bg-form-input">
         <select
-          value={dtsVO?.templateFk}
-          
-          onChange={(e) => {
-            setDtsVO({...dtsVO, templateFk: e.target.value})
-            changeTextColor();
-          }}
+          value={selectedOption}
+          onChange={handleChange}
           className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent px-5 py-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary ${
             isOptionSelected ? "text-black dark:text-white" : ""
           }`}
@@ -210,10 +305,11 @@ function DtsViewEdit() {
             Select your template
           </option>
 
-      {dtsTemplateVOs.map((dtst, index) => (
+      {(templateNames||[]).map((template, index) => (
              
-            <option value={dtst.id} className="text-body dark:text-bodydark">
-              {dtst.name}
+            <option key={index} value={template.value} 
+            className="text-body dark:text-bodydark">
+              {template.name}
             </option>
             
             ))}
@@ -222,6 +318,9 @@ function DtsViewEdit() {
 
 
         </select>
+        <button onClick={saveDtsTemplateVO} className="text-sm hover:text-primary">
+                Update template
+              </button>
 
         <span className="absolute right-4 top-1/2 z-30 -translate-y-1/2">
           <svg
@@ -256,9 +355,7 @@ function DtsViewEdit() {
                   rows={6}
                   placeholder="Write your DTS Configuration"
                   value={dtsVO?.config}
-                  onChange={(e) => {
-                    setDtsVO({...dtsVO, config: e.target.value})
-                  }}
+                  onChange={checkConfigStructure}
                   className="w-full rounded-lg border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                 ></textarea>
                      
@@ -303,26 +400,24 @@ function DtsViewEdit() {
                     Debug
                   </label>
                 </div>
-
-
  
                 {getDeploymentConfigKeys().map((key) => (
 
-                    <div className="mb-4.5">
+                    <div className="mb-4.5" key={key}>
                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                     { key }
                     </label>
                     <input
                       type="text"
-                      value={   
-                        
-                        dtsVO?.deploymentConfig[key]   }
+                      value={dtsVO?.deploymentConfig && dtsVO.deploymentConfig[key] || ''}
                       onChange={(e) => {
-                        
-                        let deploymentConf = dtsVO?.deploymentConfig;
-                        deploymentConf?[key] : e;
-                        setDtsVO({...dtsVO, deploymentConfig: deploymentConf})
-                        console.log(dtsVO?.deploymentConfig[key])
+                        setDtsVO(prevState => ({
+                          ...prevState,
+                          deploymentConfig: {
+                            ...prevState?.deploymentConfig,
+                            [key]: e.target.value
+                          }
+                        }));
                       }}
                       className="w-full rounded border-[1.5px] border-stroke bg-transparent px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
                     />
