@@ -238,7 +238,12 @@ function DtsViewEdit() {
       templateVO && await api.dtstSavePost({ dtsTemplateVO: templateVO });
     }
   }
-  
+
+  async function refreshDtsTemplateFields() {
+    await saveDtsVO();
+    router.refresh();
+  }
+
   if (auth.isAuthenticated) {
     
 
@@ -279,6 +284,7 @@ function DtsViewEdit() {
         <select
           value={selectedOption}
           onChange={handleChange}
+          onBlur={refreshDtsTemplateFields}
           className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent px-5 py-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary ${
             isOptionSelected ? "text-black dark:text-white" : "bg-red-200 placeholder-gray-3"
           }`}
