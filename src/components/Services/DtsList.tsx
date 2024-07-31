@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   DtsListPostRequest,
   DtsResourceApi,
@@ -15,6 +15,7 @@ import { useAuth } from "react-oidc-context";
 import { Log } from "oidc-client-ts";
 import Link from "next/link";
 import Pagination from "../Pagination/Pagination";
+import { GenericEntityResourceApi, GenericStateEntityTypeIdNewStatePutRequest } from '../../openapi-client/apis/GenericEntityResourceApi';
 
 const sortItems = <T extends Record<string, any>>(
   items: T[],
@@ -184,7 +185,51 @@ function DtsList() {
       </button>
     );
   }
+
+  function SelectUpdateState({className, dts}: {className: string, dts:DtsVO}): JSX.Element {
+    return (
+      <select
+        className={className}
+        defaultValue={dts.state}
+        onChange={updateStateEntity}
+        id={dts.id}
+      >
+        {
+          Object.values(EntityState).map((state, idx) => {
+            return (
+              <option
+                value={state}
+                key={idx}
+              >{state}</option>
+            )
+          })
+        }
+      </select>
+    )
+  }
   
+  const updateStateEntity = async (e: ChangeEvent<HTMLSelectElement>) => {
+    const configParameters: ConfigurationParameters = {
+      headers: {
+        'Authorization': 'Bearer ' + auth.user?.access_token ,
+      },
+      basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH,
+    };
+
+    const config = new Configuration(configParameters);
+
+    const requesParameters: GenericStateEntityTypeIdNewStatePutRequest = {
+      entityType: "DTS",
+      id: e.target.id,
+      newState: e.target.value as EntityState
+    }
+    const genericEntityResourceApi = new GenericEntityResourceApi(config);
+    try {
+      genericEntityResourceApi.genericStateEntityTypeIdNewStatePut(requesParameters); 
+    } catch (error) {
+      console.log(error)
+    }
+  }
 
   if (auth.isAuthenticated) {
     return (
@@ -283,7 +328,8 @@ function DtsList() {
                   )}
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark">
-                    <p
+                    <SelectUpdateState className="w-full sm:w-auto h-10" dts={dts} ></SelectUpdateState>
+                    {/* <p
                       className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
                         dts.state === "ENABLED"
                           ? "bg-success text-success"
@@ -293,7 +339,7 @@ function DtsList() {
                       }`}
                     >
                       {dts.state}
-                    </p>
+                    </p> */}
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
