@@ -16,6 +16,7 @@ import { Log } from "oidc-client-ts";
 import Link from "next/link";
 import Pagination from "../Pagination/Pagination";
 import { GenericEntityResourceApi, GenericStateEntityTypeIdNewStatePutRequest } from '../../openapi-client/apis/GenericEntityResourceApi';
+import TimedToast from '../TimedToast/TimedToast';
 
 const sortItems = <T extends Record<string, any>>(
   items: T[],
@@ -220,15 +221,26 @@ function DtsList() {
 
     const requesParameters: GenericStateEntityTypeIdNewStatePutRequest = {
       entityType: "DTS",
-      id: e.target.id,
+      //id: e.target.id,
+      id: "59bb099e-ad57-49cf-a6c8-5207936b28c5",
       newState: e.target.value as EntityState
     }
     const genericEntityResourceApi = new GenericEntityResourceApi(config);
-    try {
-      genericEntityResourceApi.genericStateEntityTypeIdNewStatePut(requesParameters); 
-    } catch (error) {
-      console.log(error)
-    }
+    genericEntityResourceApi.genericStateEntityTypeIdNewStatePut(requesParameters).
+    then(
+      () => {
+        
+      }
+    ).
+    catch((error) => {
+      let element = document.getElementById('toast-'+e.target.id)
+      let message = document.getElementById('message-'+e.target.id)
+      message?.innerText.concat("Holaaaaaaaaaa", "dfsasdf")
+      element?.classList.remove('invisible')
+      setTimeout(() => {
+        element?.classList.add('opacity-0', 'transition-opacity', 'ease-in-out', 'delay-300', 'duration-1000')
+      }, 3000)
+    })
   }
 
   if (auth.isAuthenticated) {
@@ -328,13 +340,14 @@ function DtsList() {
                   )}
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark">
-                    <SelectUpdateState className="w-full sm:w-auto h-10" dts={dts} ></SelectUpdateState>
+                    
+                      <SelectUpdateState className="w-full sm:w-auto h-10" dts={dts} ></SelectUpdateState>
+                      <TimedToast id={'toast-'+dts.id} message="Error to update State" timeout={4000}></TimedToast>
                     {/* <p
                       className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
                         dts.state === "ENABLED"
                           ? "bg-success text-success"
                           : dts.state === "DISABLED"
-                            ? "bg-danger text-danger"
                             : "bg-warning text-warning"
                       }`}
                     >
