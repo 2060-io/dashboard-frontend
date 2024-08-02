@@ -14,9 +14,9 @@ import { Configuration, ConfigurationParameters } from "../../openapi-client";
 import { useAuth } from "react-oidc-context";
 import { Log } from "oidc-client-ts";
 import Link from "next/link";
-import Pagination from "../Pagination/Pagination";
+import Pagination from "../../app/ui/Pagination/Pagination";
 import { GenericEntityResourceApi, GenericStateEntityTypeIdNewStatePutRequest } from '../../openapi-client/apis/GenericEntityResourceApi';
-import TimedToast from '../TimedToast/TimedToast';
+import WarningTimedToast from '../../app/ui/TimedToasts/WarningTimedToast';
 
 const sortItems = <T extends Record<string, any>>(
   items: T[],
@@ -40,6 +40,7 @@ function DtsList() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [sortKey, setSortKey] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
+  const [defaultValueSelect, setDefaultValueSelect] = useState<string>('')
   const visiblePages = 4;
 
   const filterByDts = (item: DtsVO) => item.name?.toLowerCase().includes(searchDts.toLowerCase());
@@ -194,6 +195,10 @@ function DtsList() {
         defaultValue={dts.state}
         onChange={updateStateEntity}
         id={dts.id}
+        onClick={setInitClassNameToastError}
+        onFocus={(e: React.FocusEvent<HTMLSelectElement, Element>) => {
+          setDefaultValueSelect(e.target.value)
+        }}
       >
         {
           Object.values(EntityState).map((state, idx) => {
@@ -222,25 +227,35 @@ function DtsList() {
     const requesParameters: GenericStateEntityTypeIdNewStatePutRequest = {
       entityType: "DTS",
       //id: e.target.id,
-      id: "59bb099e-ad57-49cf-a6c8-5207936b28c5",
+      id: "7e15d2ab-c263-45f0-86fd-95d7f6509f96",
       newState: e.target.value as EntityState
     }
     const genericEntityResourceApi = new GenericEntityResourceApi(config);
     genericEntityResourceApi.genericStateEntityTypeIdNewStatePut(requesParameters).
-    then(
-      () => {
-        
-      }
-    ).
-    catch((error) => {
-      let element = document.getElementById('toast-'+e.target.id)
-      let message = document.getElementById('message-'+e.target.id)
-      message?.innerText.concat("Holaaaaaaaaaa", "dfsasdf")
-      element?.classList.remove('invisible')
-      setTimeout(() => {
-        element?.classList.add('opacity-0', 'transition-opacity', 'ease-in-out', 'delay-300', 'duration-1000')
-      }, 3000)
+    then(() => {
+    }).
+    catch( () => {
+      showToastErrorUpdateState('toast-'+e.target.id)
+      e.target.value = defaultValueSelect
     })
+  }
+
+  function showToastErrorUpdateState(id: string) {
+    let element = document.getElementById(id)
+    element?.classList.remove('invisible')
+    setTimeout(() => {
+      element?.classList.add('opacity-0', 'transition-opacity', 'ease-in-out', 'delay-300', 'duration-1000')
+    }, 4000)    
+  }
+
+  function setInitClassNameToastError(e: React.MouseEvent<HTMLSelectElement, MouseEvent>) {
+    //setDefaultValueSelect(e.currentTarget.value)
+    if('' !== defaultValueSelect.trim()){
+      let element = document.getElementById('toast-'+e.currentTarget.id)
+      element?.classList.remove('opacity-0', 'transition-opacity', 'ease-in-out', 'delay-300', 'duration-1000')
+      element?.classList.add('invisible')
+      setDefaultValueSelect(e.currentTarget.value)
+    }
   }
 
   if (auth.isAuthenticated) {
@@ -341,8 +356,8 @@ function DtsList() {
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark">
                     
-                      <SelectUpdateState className="w-full sm:w-auto h-10" dts={dts} ></SelectUpdateState>
-                      <TimedToast id={'toast-'+dts.id} message="Error to update State" timeout={4000}></TimedToast>
+                      <SelectUpdateState className="w-full sm:w-auto h-10 dark:text-white bg-transparent" dts={dts} ></SelectUpdateState>
+                      <WarningTimedToast message={"Error to update State"} idToast={'toast-'+dts.id} ></WarningTimedToast>
                     {/* <p
                       className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
                         dts.state === "ENABLED"
