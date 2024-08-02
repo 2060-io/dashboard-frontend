@@ -13,6 +13,11 @@ interface SidebarProps {
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const pathname = usePathname();
+  const pathnames: string [] = [
+    'dashboard',
+    '/services',
+    '/templates'
+  ]
 
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
@@ -115,10 +120,11 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
               <SidebarLinkGroup
                 activeCondition={
-                  pathname === "/" || pathname.includes("dashboard")
+                  pathname === "/" || pathnames.includes(pathname)
                 }
               >
                 {(handleClick, open) => {
+                  console.log(pathname)
                   return (
                     <React.Fragment>
                       <Link
