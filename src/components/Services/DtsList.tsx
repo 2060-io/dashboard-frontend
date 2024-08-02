@@ -226,8 +226,7 @@ function DtsList() {
 
     const requesParameters: GenericStateEntityTypeIdNewStatePutRequest = {
       entityType: "DTS",
-      //id: e.target.id,
-      id: "7e15d2ab-c263-45f0-86fd-95d7f6509f96",
+      id: e.target.id,
       newState: e.target.value as EntityState
     }
     const genericEntityResourceApi = new GenericEntityResourceApi(config);
