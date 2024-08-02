@@ -124,7 +124,6 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                 }
               >
                 {(handleClick, open) => {
-                  console.log(pathname)
                   return (
                     <React.Fragment>
                       <Link
