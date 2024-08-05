@@ -17,6 +17,7 @@ import Link from "next/link";
 import Pagination from "../../app/ui/Pagination/Pagination";
 import { GenericEntityResourceApi, GenericStateEntityTypeIdNewStatePutRequest } from '../../openapi-client/apis/GenericEntityResourceApi';
 import WarningTimedToast from '../../app/ui/TimedToasts/WarningTimedToast';
+import { useRouter } from "next/navigation";
 
 const sortItems = <T extends Record<string, any>>(
   items: T[],
@@ -40,7 +41,6 @@ function DtsList() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [sortKey, setSortKey] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
-  const [defaultValuesSelect, setDefaultValuesSelect] = useState<EntityState[]>([])
   const visiblePages = 4;
 
   const filterByDts = (item: DtsVO) => item.name?.toLowerCase().includes(searchDts.toLowerCase());
@@ -67,6 +67,7 @@ function DtsList() {
   };
 
   const auth = useAuth();
+  const router = useRouter();
 
   Log.setLogger(console);
   Log.setLevel(Log.DEBUG);
@@ -102,19 +103,9 @@ function DtsList() {
         ]));
   }
 
-  function setDefaultValuesStateList(): void {
-    let listState: EntityState[] = []
-    dtsVOs.forEach((dts: DtsVO) => {
-      listState.push(dts.state as EntityState)
-    })
-
-    setDefaultValuesSelect(listState)
-  }
-
   useEffect(() => {
     if (auth.isAuthenticated) {
       listDtsVOs();
-      setDefaultValuesStateList()
     }
   }, [auth]);
 
@@ -213,6 +204,7 @@ function DtsList() {
               <option
                 value={state}
                 key={idx}
+                className={setCololrState(state)}
               >{state}</option>
             )
           })
@@ -241,12 +233,11 @@ function DtsList() {
     const genericEntityResourceApi = new GenericEntityResourceApi(config);
     genericEntityResourceApi.genericStateEntityTypeIdNewStatePut(requesParameters).
     then(() => {
-      updateColorState(e.target.id, e.target.value as EntityState);
-      defaultValuesSelect[indexSelect] = e.target.value as EntityState;
+      router.refresh()
     }).
     catch( () => {
       showToastErrorUpdateState('toast-'+e.target.id);
-      e.target.value = defaultValuesSelect[indexSelect];
+      router.refresh()
     })
   }
 
@@ -266,8 +257,16 @@ function DtsList() {
 
   function updateColorState(idElement: string, state: string): void {
     let element = document.getElementById(idElement);
-    element?.classList.remove('text-success', 'text-warning', 'text-black');
-    element?.classList.add('ENABLED' === state ? 'text-success' : 'DISABLED' === state ? 'text-warning' : 'text-black');
+    element?.classList.remove('text-success', 'text-warning', 'text-danger', 'text-black', 'dark:text-success', 'dark:text-warning', 'dark:text-danger', 'dark:text-white');
+    setCololrState(state).split(' ').forEach((className: string) => {
+      element?.classList.add(className);
+    })
+  }
+
+  function setCololrState(state: string): string {
+    let color = 'text-black';
+    color = 'ENABLED' === state ? 'text-success dark:text-success' : 'DISABLED' === state ? 'text-danger dark:text-danger' : 'EDITING' === state ? 'text-warning dark:text-warning' : 'text-black dark:text-white'
+    return color;
   }
 
   if (auth.isAuthenticated) {
@@ -368,7 +367,7 @@ function DtsList() {
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark">
                     
-                      <SelectUpdateState className={`w-full sm:w-auto h-10 font-medium dark:text-white bg-transparent ${"ENABLED" === dts.state ? "text-success" : "DISABLED" === dts.state ? "text-warning" : "text-black"} `} dts={dts} index={index} ></SelectUpdateState>
+                      <SelectUpdateState className={`w-full sm:w-auto h-10 font-medium bg-transparent ${setCololrState(String(dts.state))}`} dts={dts} index={index} ></SelectUpdateState>
                       <WarningTimedToast message={"Error to update State"} idToast={'toast-'+dts.id} ></WarningTimedToast>
                     {/* <p
                       className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
