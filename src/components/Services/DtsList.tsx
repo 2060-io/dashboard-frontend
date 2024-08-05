@@ -40,7 +40,7 @@ function DtsList() {
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [sortKey, setSortKey] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
-  const [defaultValueSelect, setDefaultValueSelect] = useState<string>('')
+  const [defaultValuesSelect, setDefaultValuesSelect] = useState<EntityState[]>([])
   const visiblePages = 4;
 
   const filterByDts = (item: DtsVO) => item.name?.toLowerCase().includes(searchDts.toLowerCase());
@@ -102,9 +102,19 @@ function DtsList() {
         ]));
   }
 
+  function setDefaultValuesStateList(): void {
+    let listState: EntityState[] = []
+    dtsVOs.forEach((dts: DtsVO) => {
+      listState.push(dts.state as EntityState)
+    })
+
+    setDefaultValuesSelect(listState)
+  }
+
   useEffect(() => {
     if (auth.isAuthenticated) {
       listDtsVOs();
+      setDefaultValuesStateList()
     }
   }, [auth]);
 
@@ -188,17 +198,14 @@ function DtsList() {
     );
   }
 
-  function SelectUpdateState({className, dts}: {className: string, dts:DtsVO}): JSX.Element {
+  function SelectUpdateState({className, dts, index}: {className: string, dts:DtsVO, index: number}): JSX.Element {
     return (
       <select
         className={className}
         defaultValue={dts.state}
         onChange={updateStateEntity}
         id={dts.id}
-        onClick={setInitClassNameToastError}
-        onFocus={(e: React.FocusEvent<HTMLSelectElement, Element>) => {
-          setDefaultValueSelect(e.target.value)
-        }}
+        data-key={index}
       >
         {
           Object.values(EntityState).map((state, idx) => {
@@ -215,6 +222,7 @@ function DtsList() {
   }
   
   const updateStateEntity = async (e: ChangeEvent<HTMLSelectElement>) => {
+    await setInitClassNameToastError(e)
     const configParameters: ConfigurationParameters = {
       headers: {
         'Authorization': 'Bearer ' + auth.user?.access_token ,
@@ -229,14 +237,16 @@ function DtsList() {
       id: e.target.id,
       newState: e.target.value as EntityState
     }
+    const indexSelect = Number(e.target.getAttribute('data-key'));
     const genericEntityResourceApi = new GenericEntityResourceApi(config);
     genericEntityResourceApi.genericStateEntityTypeIdNewStatePut(requesParameters).
     then(() => {
       updateColorState(e.target.id, e.target.value as EntityState);
+      defaultValuesSelect[indexSelect] = e.target.value as EntityState;
     }).
     catch( () => {
-      showToastErrorUpdateState('toast-'+e.target.id)
-      e.target.value = defaultValueSelect
+      showToastErrorUpdateState('toast-'+e.target.id);
+      e.target.value = defaultValuesSelect[indexSelect];
     })
   }
 
@@ -248,14 +258,10 @@ function DtsList() {
     }, 4000)    
   }
 
-  function setInitClassNameToastError(e: React.MouseEvent<HTMLSelectElement, MouseEvent>) {
-    //setDefaultValueSelect(e.currentTarget.value)
-    if('' !== defaultValueSelect.trim()){
-      let element = document.getElementById('toast-'+e.currentTarget.id)
-      element?.classList.remove('opacity-0', 'transition-opacity', 'ease-in-out', 'delay-300', 'duration-1000')
-      element?.classList.add('invisible')
-      setDefaultValueSelect(e.currentTarget.value)
-    }
+  function setInitClassNameToastError(e: ChangeEvent<HTMLSelectElement>) {
+    let element = document.getElementById('toast-'+e.target.id)
+    element?.classList.remove('opacity-0', 'transition-opacity', 'ease-in-out', 'delay-300', 'duration-1000')
+    element?.classList.add('invisible')
   }
 
   function updateColorState(idElement: string, state: string): void {
@@ -362,7 +368,7 @@ function DtsList() {
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark">
                     
-                      <SelectUpdateState className={`w-full sm:w-auto h-10 font-medium dark:text-white bg-transparent ${"ENABLED" === dts.state ? "text-success" : "DISABLED" === dts.state ? "text-warning" : "text-black"} `} dts={dts} ></SelectUpdateState>
+                      <SelectUpdateState className={`w-full sm:w-auto h-10 font-medium dark:text-white bg-transparent ${"ENABLED" === dts.state ? "text-success" : "DISABLED" === dts.state ? "text-warning" : "text-black"} `} dts={dts} index={index} ></SelectUpdateState>
                       <WarningTimedToast message={"Error to update State"} idToast={'toast-'+dts.id} ></WarningTimedToast>
                     {/* <p
                       className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
