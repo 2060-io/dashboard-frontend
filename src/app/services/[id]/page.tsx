@@ -20,7 +20,7 @@ const Service = () => {
 
   return (
     <DefaultLayout>
-      <Breadcrumb pageName="Service" />
+      <Breadcrumb pageName="Service" sectionName="Service Provider / " />
 
       <div className="flex flex-col gap-10">
         <DtsViewEdit />
