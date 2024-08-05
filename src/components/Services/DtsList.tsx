@@ -232,6 +232,7 @@ function DtsList() {
     const genericEntityResourceApi = new GenericEntityResourceApi(config);
     genericEntityResourceApi.genericStateEntityTypeIdNewStatePut(requesParameters).
     then(() => {
+      updateColorState(e.target.id, e.target.value as EntityState);
     }).
     catch( () => {
       showToastErrorUpdateState('toast-'+e.target.id)
@@ -255,6 +256,12 @@ function DtsList() {
       element?.classList.add('invisible')
       setDefaultValueSelect(e.currentTarget.value)
     }
+  }
+
+  function updateColorState(idElement: string, state: string): void {
+    let element = document.getElementById(idElement);
+    element?.classList.remove('text-success', 'text-warning', 'text-black');
+    element?.classList.add('ENABLED' === state ? 'text-success' : 'DISABLED' === state ? 'text-warning' : 'text-black');
   }
 
   if (auth.isAuthenticated) {
@@ -355,7 +362,7 @@ function DtsList() {
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark">
                     
-                      <SelectUpdateState className="w-full sm:w-auto h-10 dark:text-white bg-transparent" dts={dts} ></SelectUpdateState>
+                      <SelectUpdateState className={`w-full sm:w-auto h-10 font-medium dark:text-white bg-transparent ${"ENABLED" === dts.state ? "text-success" : "DISABLED" === dts.state ? "text-warning" : "text-black"} `} dts={dts} ></SelectUpdateState>
                       <WarningTimedToast message={"Error to update State"} idToast={'toast-'+dts.id} ></WarningTimedToast>
                     {/* <p
                       className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
