@@ -204,7 +204,7 @@ function DtsList() {
               <option
                 value={state}
                 key={idx}
-                className={setCololrState(state)}
+                className={String(state) === String(dts.state) ? setCololrState(state) : ""}
               >{state}</option>
             )
           })
@@ -255,13 +255,13 @@ function DtsList() {
     element?.classList.add('invisible')
   }
 
-  function updateColorState(idElement: string, state: string): void {
-    let element = document.getElementById(idElement);
-    element?.classList.remove('text-success', 'text-warning', 'text-danger', 'text-black', 'dark:text-success', 'dark:text-warning', 'dark:text-danger', 'dark:text-white');
-    setCololrState(state).split(' ').forEach((className: string) => {
-      element?.classList.add(className);
-    })
-  }
+  // function updateColorState(idElement: string, state: string): void {
+  //   let element = document.getElementById(idElement);
+  //   element?.classList.remove('text-success', 'text-warning', 'text-danger', 'text-black', 'dark:text-success', 'dark:text-warning', 'dark:text-danger', 'dark:text-white');
+  //   setCololrState(state).split(' ').forEach((className: string) => {
+  //     element?.classList.add(className);
+  //   })
+  // }
 
   function setCololrState(state: string): string {
     let color = 'text-black';
