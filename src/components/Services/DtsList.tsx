@@ -204,7 +204,7 @@ function DtsList() {
               <option
                 value={state}
                 key={idx}
-                className={String(state) === String(dts.state) ? setCololrState(state) : ""}
+                className="text-black dark:text-white"
               >{state}</option>
             )
           })
@@ -229,7 +229,6 @@ function DtsList() {
       id: e.target.id,
       newState: e.target.value as EntityState
     }
-    const indexSelect = Number(e.target.getAttribute('data-key'));
     const genericEntityResourceApi = new GenericEntityResourceApi(config);
     genericEntityResourceApi.genericStateEntityTypeIdNewStatePut(requesParameters).
     then(() => {
@@ -254,14 +253,6 @@ function DtsList() {
     element?.classList.remove('opacity-0', 'transition-opacity', 'ease-in-out', 'delay-300', 'duration-1000')
     element?.classList.add('invisible')
   }
-
-  // function updateColorState(idElement: string, state: string): void {
-  //   let element = document.getElementById(idElement);
-  //   element?.classList.remove('text-success', 'text-warning', 'text-danger', 'text-black', 'dark:text-success', 'dark:text-warning', 'dark:text-danger', 'dark:text-white');
-  //   setCololrState(state).split(' ').forEach((className: string) => {
-  //     element?.classList.add(className);
-  //   })
-  // }
 
   function setCololrState(state: string): string {
     let color = 'text-black';
@@ -367,18 +358,8 @@ function DtsList() {
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark">
                     
-                      <SelectUpdateState className={`w-full sm:w-auto h-10 font-medium bg-transparent ${setCololrState(String(dts.state))}`} dts={dts} index={index} ></SelectUpdateState>
+                      <SelectUpdateState className={`w-full sm:w-auto h-10 font-medium bg-transparent focus:text-black focus:dark:text-white ${setCololrState(String(dts.state))}`} dts={dts} index={index} ></SelectUpdateState>
                       <WarningTimedToast message={"Error to update State"} idToast={'toast-'+dts.id} ></WarningTimedToast>
-                    {/* <p
-                      className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                        dts.state === "ENABLED"
-                          ? "bg-success text-success"
-                          : dts.state === "DISABLED"
-                            : "bg-warning text-warning"
-                      }`}
-                    >
-                      {dts.state}
-                    </p> */}
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
