@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   DtsListPostRequest,
   DtsResourceApi,
@@ -14,7 +14,10 @@ import { Configuration, ConfigurationParameters } from "../../openapi-client";
 import { useAuth } from "react-oidc-context";
 import { Log } from "oidc-client-ts";
 import Link from "next/link";
-import Pagination from "../Pagination/Pagination";
+import { Pagination } from "./index";
+import { GenericEntityResourceApi, GenericStateEntityTypeIdNewStatePutRequest } from '../../openapi-client/apis/GenericEntityResourceApi';
+import { WarningTimedToast } from "./index";
+import { useRouter } from "next/navigation";
 
 const sortItems = <T extends Record<string, any>>(
   items: T[],
@@ -64,6 +67,7 @@ function DtsList() {
   };
 
   const auth = useAuth();
+  const router = useRouter();
 
   Log.setLogger(console);
   Log.setLevel(Log.DEBUG);
@@ -184,7 +188,77 @@ function DtsList() {
       </button>
     );
   }
+
+  function SelectUpdateState({className, dts, index}: {className: string, dts:DtsVO, index: number}): JSX.Element {
+    return (
+      <select
+        className={className}
+        defaultValue={dts.state}
+        onChange={updateStateEntity}
+        id={dts.id}
+        data-key={index}
+      >
+        {
+          Object.values(EntityState).map((state, idx) => {
+            return (
+              <option
+                value={state}
+                key={idx}
+                className="text-black dark:text-white"
+              >{state}</option>
+            )
+          })
+        }
+      </select>
+    )
+  }
   
+  const updateStateEntity = async (e: ChangeEvent<HTMLSelectElement>) => {
+    await setInitClassNameToastError(e)
+    const configParameters: ConfigurationParameters = {
+      headers: {
+        'Authorization': 'Bearer ' + auth.user?.access_token ,
+      },
+      basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH,
+    };
+
+    const config = new Configuration(configParameters);
+
+    const requesParameters: GenericStateEntityTypeIdNewStatePutRequest = {
+      entityType: "DTS",
+      id: e.target.id,
+      newState: e.target.value as EntityState
+    }
+    const genericEntityResourceApi = new GenericEntityResourceApi(config);
+    genericEntityResourceApi.genericStateEntityTypeIdNewStatePut(requesParameters).
+    then(() => {
+      router.refresh()
+    }).
+    catch( () => {
+      showToastErrorUpdateState('toast-'+e.target.id);
+      router.refresh()
+    })
+  }
+
+  function showToastErrorUpdateState(id: string) {
+    let element = document.getElementById(id)
+    element?.classList.remove('invisible')
+    setTimeout(() => {
+      element?.classList.add('opacity-0', 'transition-opacity', 'ease-in-out', 'delay-300', 'duration-1000')
+    }, 4000)    
+  }
+
+  function setInitClassNameToastError(e: ChangeEvent<HTMLSelectElement>) {
+    let element = document.getElementById('toast-'+e.target.id)
+    element?.classList.remove('opacity-0', 'transition-opacity', 'ease-in-out', 'delay-300', 'duration-1000')
+    element?.classList.add('invisible')
+  }
+
+  function setCololrState(state: string): string {
+    let color = 'text-black';
+    color = 'ENABLED' === state ? 'text-success dark:text-success' : 'DISABLED' === state ? 'text-danger dark:text-danger' : 'EDITING' === state ? 'text-warning dark:text-warning' : 'text-black dark:text-white'
+    return color;
+  }
 
   if (auth.isAuthenticated) {
     return (
@@ -283,17 +357,9 @@ function DtsList() {
                   )}
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark">
-                    <p
-                      className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                        dts.state === "ENABLED"
-                          ? "bg-success text-success"
-                          : dts.state === "DISABLED"
-                            ? "bg-danger text-danger"
-                            : "bg-warning text-warning"
-                      }`}
-                    >
-                      {dts.state}
-                    </p>
+                    
+                      <SelectUpdateState className={`w-full sm:w-auto h-10 font-medium bg-transparent focus:text-black focus:dark:text-white ${setCololrState(String(dts.state))}`} dts={dts} index={index} ></SelectUpdateState>
+                      <WarningTimedToast message={"Error to update State"} idToast={'toast-'+dts.id} ></WarningTimedToast>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">

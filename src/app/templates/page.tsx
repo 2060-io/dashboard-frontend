@@ -5,7 +5,7 @@ import SelectDtsTemplate from "@/components/Templates/SelectDtsTemplate";
 const Templates = () => {
   return (
     <DefaultLayout>
-      <Breadcrumb pageName="Templates" />
+      <Breadcrumb pageName="Templates" sectionName="Service Provider / " />
 
       <div className="flex flex-col gap-10">
         <SelectDtsTemplate />
