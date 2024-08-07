@@ -14,9 +14,9 @@ import { Configuration, ConfigurationParameters } from "../../openapi-client";
 import { useAuth } from "react-oidc-context";
 import { Log } from "oidc-client-ts";
 import Link from "next/link";
-import Pagination from "@/app/ui/Pagination/Pagination";
+import { Pagination } from "./index";
 import { GenericEntityResourceApi, GenericStateEntityTypeIdNewStatePutRequest } from '../../openapi-client/apis/GenericEntityResourceApi';
-import WarningTimedToast from '@/app/ui/TimedToasts/WarningTimedToast';
+import { WarningTimedToast } from "./index";
 import { useRouter } from "next/navigation";
 
 const sortItems = <T extends Record<string, any>>(

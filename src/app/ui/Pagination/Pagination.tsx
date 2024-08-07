@@ -1,6 +1,6 @@
 import React, { ChangeEvent, useMemo } from 'react';
 
-function Pagination({
+export function Pagination({
     itemsPerPage,
     setItemsPerPage,
     currentPage,

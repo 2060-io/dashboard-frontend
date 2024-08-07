@@ -1,9 +1,9 @@
-interface WarningTimedToastProps {
+export interface WarningTimedToastProps {
   idToast: string
   message: string
 }
 
-const WarningTimedToast: React.FC<WarningTimedToastProps> = ({ idToast, message }) => {
+export const WarningTimedToast: React.FC<WarningTimedToastProps> = ({ idToast, message }) => {
   return (
     (
         <div className={`absolute invisible border-1 flex items-center w-md max-w-xs p-1 mt-2 text-gray-500 bg-white rounded-lg shadow-3 shadow-warning dark:text-black dark:bg-gray-800`} id={idToast}>
