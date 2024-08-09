@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import SidebarLinkGroup from "./SidebarLinkGroup";
+import { validate } from "uuid";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -21,6 +22,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
+  const validateUuidv4 = validate
 
   let storedSidebarExpanded = "true";
 
@@ -62,6 +64,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       document.querySelector("body")?.classList.remove("sidebar-expanded");
     }
   }, [sidebarExpanded]);
+
+
 
   return (
     <aside
@@ -120,7 +124,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
               <SidebarLinkGroup
                 activeCondition={
-                  pathname === "/" || pathnames.includes(pathname)
+                  pathname === "/" || pathnames.includes(pathname) || validateUuidv4(pathname.split("/")[pathname.split("/").length-1])
                 }
               >
                 {(handleClick, open) => {
