@@ -29,4 +29,19 @@ export const WarningTimedToast: React.FC<WarningTimedToastProps> = ({ idToast, m
   );
 };
 
+export function showToastWarningUpdateState(id: string) {
+  let element = document.getElementById(id)
+  element?.classList.remove('invisible')
+  setTimeout(() => {
+    element?.classList.add('opacity-0', 'transition-opacity', 'ease-in-out', 'delay-300', 'duration-1000')
+  }, 4000)    
+}
+
+export function setInitClassNameToastWarning(idService: string) {
+  let element = document.getElementById('toast-'+idService)
+  element?.classList.remove('opacity-0', 'transition-opacity', 'ease-in-out', 'delay-300', 'duration-1000')
+  element?.classList.add('invisible')
+}
+
+
 export default WarningTimedToast;
