@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import SidebarLinkGroup from "./SidebarLinkGroup";
+import { validate } from "uuid";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -13,9 +14,15 @@ interface SidebarProps {
 
 const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const pathname = usePathname();
+  const pathnames: string [] = [
+    'dashboard',
+    '/services',
+    '/templates'
+  ]
 
   const trigger = useRef<any>(null);
   const sidebar = useRef<any>(null);
+  const validateUuidv4 = validate
 
   let storedSidebarExpanded = "true";
 
@@ -57,6 +64,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
       document.querySelector("body")?.classList.remove("sidebar-expanded");
     }
   }, [sidebarExpanded]);
+
+
 
   return (
     <aside
@@ -115,7 +124,7 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
 
               <SidebarLinkGroup
                 activeCondition={
-                  pathname === "/" || pathname.includes("dashboard")
+                  pathname === "/" || pathnames.includes(pathname) || validateUuidv4(pathname.split("/")[pathname.split("/").length-1])
                 }
               >
                 {(handleClick, open) => {
@@ -238,9 +247,9 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                       </Link>*/}
 
                       <div
-                        className={`translate transform overflow-hidden ${
-                          !open && "hidden"
-                        }`}
+                        className={`overflow-hidden ${
+                          !open ? "h-0" :  "h-21"
+                        } transition-height duration-500 ease-in-out`}
                       >
                         <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
                           <li>

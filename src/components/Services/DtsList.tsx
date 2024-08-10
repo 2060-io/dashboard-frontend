@@ -14,7 +14,7 @@ import { Configuration, ConfigurationParameters } from "../../openapi-client";
 import { useAuth } from "react-oidc-context";
 import { Log } from "oidc-client-ts";
 import Link from "next/link";
-import Pagination from "../Pagination/Pagination";
+import { Pagination, WarningTimedToast, DropdownUpdateState } from "./index";
 
 const sortItems = <T extends Record<string, any>>(
   items: T[],
@@ -184,7 +184,6 @@ function DtsList() {
       </button>
     );
   }
-  
 
   if (auth.isAuthenticated) {
     return (
@@ -203,7 +202,7 @@ function DtsList() {
             <ButtonAddService className="rounded-full bg-white dark:bg-boxdark w-10 h-10 border-2 border-gray-300 dark:border-strokedark flex items-center justify-center relative"/>
           </div>
         </div>
-        <div className="max-w-full overflow-x-auto">
+        <div className="max-w-full">
           <table className="w-full table-auto">
             <thead>
               <tr className="bg-gray-2 text-left dark:bg-meta-4">
@@ -283,17 +282,8 @@ function DtsList() {
                   )}
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark">
-                    <p
-                      className={`inline-flex rounded-full bg-opacity-10 px-3 py-1 text-sm font-medium ${
-                        dts.state === "ENABLED"
-                          ? "bg-success text-success"
-                          : dts.state === "DISABLED"
-                            ? "bg-danger text-danger"
-                            : "bg-warning text-warning"
-                      }`}
-                    >
-                      {dts.state}
-                    </p>
+                      <DropdownUpdateState dts={dts} ></DropdownUpdateState>
+                      <WarningTimedToast message={"Error to update State"} idToast={'toast-'+dts.id} ></WarningTimedToast>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 text-center dark:border-strokedark">
                     <div className="flex items-center space-x-3.5">
