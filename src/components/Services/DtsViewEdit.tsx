@@ -131,7 +131,7 @@ function DtsViewEdit() {
         // templates = [currentTemplate, ...templates];
 
         templates = [...templates];     
-        setTemplateNames(templates);
+      setTemplateNames(templates);
     } catch (error) {
         console.error('Error fetching templates:', error);
     }
