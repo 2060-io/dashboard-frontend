@@ -127,9 +127,10 @@ function DtsViewEdit() {
             value: folder.name,
             schema: folder.name === "Fastbot" ? process.env.NEXT_PUBLIC_TEMPLATE_DIR : null
         }));
-        const currentTemplate = { name: "Current", value: "current", schema:null };
-        templates = [currentTemplate, ...templates];
+        // const currentTemplate = { name: "Current", value: "current", schema:null };
+        // templates = [currentTemplate, ...templates];
 
+        templates = [...templates];     
       setTemplateNames(templates);
     } catch (error) {
         console.error('Error fetching templates:', error);
@@ -190,6 +191,12 @@ function DtsViewEdit() {
     }
 }, [auth, needsRefresh]);
 
+useEffect(() => {
+  if('' == selectedOption || 'newTemplateFk' == selectedOption){
+    setSelectedOption(getNameTemplateCurrent())
+  }
+});
+
   function getDeploymentConfigKeys(): string[] {
 
     let keylist:  string[] = [];
@@ -212,7 +219,13 @@ function DtsViewEdit() {
   
     const config = new Configuration(configParameters);
     const api = new DtsResourceApi(config);
-    
+
+    if(false === isMatchNameServiceWithNameTemplate(selectedOption)){
+      dtsVO.name = undefined !== dtsVO.title ? dtsVO.title : '';
+      getDtsVO();
+      return;
+    }
+
     try {
       await saveDtsTemplateVO()
       await api.dtsSavePost({ dtsVO: dtsVO });
@@ -244,6 +257,33 @@ function DtsViewEdit() {
     router.refresh();
   }
 
+  const isMatchNameServiceWithNameTemplate = (nameTemplate: string): boolean => {
+    let match = false;
+    const wordsNameService = dtsVO.name?.toLowerCase().split(' ');
+    const wordsNameTemplate = nameTemplate.toLowerCase().split(' ');
+    wordsNameTemplate.forEach((name: string) => {
+      if(wordsNameService?.includes(name)){
+        match = true
+      }
+    })
+    return match;
+  }
+
+  const getNameTemplateCurrent = () => {
+    let nameTemplate = 'newTemplateFk';
+    const wordsNameService = dtsVO.name?.toLowerCase().split(' ');
+    templateNames.forEach((template: TemplateInfo) => {
+      const wordsNameTemplate = template.name.toLowerCase().split(' ');
+      wordsNameTemplate.forEach((word: string) => {
+        if(wordsNameService?.includes(word)){
+          nameTemplate = template.name
+        }
+      })
+    })
+    
+    return nameTemplate;
+  }
+
   if (auth.isAuthenticated) {
     
 
@@ -266,6 +306,7 @@ function DtsViewEdit() {
                   Name
                   </label>
                   <input
+                    id={'input-'+dtsVO.id}
                     type="text"
                     placeholder="Choose a name for your DTS"
                     value={dtsVO?.name}
