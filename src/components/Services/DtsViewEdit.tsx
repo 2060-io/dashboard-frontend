@@ -322,7 +322,7 @@ useEffect(() => {
       </label>
 
       <div className="relative z-20 bg-transparent dark:bg-form-input">
-        <select
+      <select
           value={selectedOption}
           onChange={handleChange}
           onBlur={refreshDtsTemplateFields}
@@ -336,13 +336,13 @@ useEffect(() => {
           </option>
 
       {(templateNames||[]).map((template, index) => (
-
-          <option key={index} value={template.value} 
-          className="text-body dark:text-bodydark">
-            {template.name}
-          </option>
+             
+            <option key={index} value={template.value} 
+            className="text-body dark:text-bodydark">
+              {template.name}
+            </option>
             
-      ))}
+            ))}
 
 
 
