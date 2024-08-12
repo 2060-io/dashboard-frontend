@@ -185,9 +185,9 @@ function DtsViewEdit() {
 
   useEffect(() => {
     if (auth.isAuthenticated) {
-        getDtsVO();
-        listDtsTemplateVOs();
-        listTemplateNames();
+      getDtsVO();
+      listDtsTemplateVOs();
+      listTemplateNames();
     }
 }, [auth, needsRefresh]);
 
@@ -337,10 +337,10 @@ useEffect(() => {
 
       {(templateNames||[]).map((template, index) => (
 
-        <option key={index} value={template.value} 
-        className="text-body dark:text-bodydark">
-          {template.name}
-        </option>
+          <option key={index} value={template.value} 
+          className="text-body dark:text-bodydark">
+            {template.name}
+          </option>
             
       ))}
 
