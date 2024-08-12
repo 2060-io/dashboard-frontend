@@ -322,7 +322,7 @@ useEffect(() => {
       </label>
 
       <div className="relative z-20 bg-transparent dark:bg-form-input">
-      <select
+        <select
           value={selectedOption}
           onChange={handleChange}
           onBlur={refreshDtsTemplateFields}
