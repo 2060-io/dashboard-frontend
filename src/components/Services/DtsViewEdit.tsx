@@ -127,10 +127,11 @@ function DtsViewEdit() {
             value: folder.name,
             schema: folder.name === "Fastbot" ? process.env.NEXT_PUBLIC_TEMPLATE_DIR : null
         }));
-        const currentTemplate = { name: "Current", value: "current", schema:null };
-        templates = [currentTemplate, ...templates];
+        // const currentTemplate = { name: "Current", value: "current", schema:null };
+        // templates = [currentTemplate, ...templates];
 
-      setTemplateNames(templates);
+        templates = [...templates];     
+        setTemplateNames(templates);
     } catch (error) {
         console.error('Error fetching templates:', error);
     }
@@ -184,11 +185,18 @@ function DtsViewEdit() {
 
   useEffect(() => {
     if (auth.isAuthenticated) {
-      getDtsVO();
-      listDtsTemplateVOs();
-      listTemplateNames();
+        getDtsVO();
+        listDtsTemplateVOs();
+        listTemplateNames();
     }
 }, [auth, needsRefresh]);
+
+useEffect(() => {
+  console.log(selectedOption)
+  if('' == selectedOption || 'newTemplateFk' == selectedOption){
+    setSelectedOption(getNameTemplateCurrent())
+  }
+});
 
   function getDeploymentConfigKeys(): string[] {
 
@@ -212,7 +220,15 @@ function DtsViewEdit() {
   
     const config = new Configuration(configParameters);
     const api = new DtsResourceApi(config);
-    
+
+    //console.log(dtsVO)
+    if(false === isMatchNameServiceWithNameTemplate(selectedOption)){
+      //console.log(dtsVO)
+      dtsVO.name = undefined !== dtsVO.title ? dtsVO.title : '';
+      getDtsVO();
+      return;
+    }
+
     try {
       await saveDtsTemplateVO()
       await api.dtsSavePost({ dtsVO: dtsVO });
@@ -244,6 +260,34 @@ function DtsViewEdit() {
     router.refresh();
   }
 
+  const isMatchNameServiceWithNameTemplate = (nameTemplate: string): boolean => {
+    let match = false;
+    const wordsNameService = dtsVO.name?.toLowerCase().split(' ');
+    const wordsNameTemplate = nameTemplate.toLowerCase().split(' ');
+    wordsNameTemplate.forEach((name: string) => {
+      if(wordsNameService?.includes(name)){
+        match = true
+      }
+    })
+    return match;
+  }
+
+  const getNameTemplateCurrent = () => {
+    let nameTemplate = 'newTemplateFk';
+    const wordsNameService = dtsVO.name?.toLowerCase().split(' ');
+    //console.log(wordsNameService)
+    templateNames.forEach((template: TemplateInfo) => {
+      const wordsNameTemplate = template.name.toLowerCase().split(' ');
+      wordsNameTemplate.forEach((word: string) => {
+        if(wordsNameService?.includes(word)){
+          nameTemplate = template.name
+        }
+      })
+    })
+    
+    return nameTemplate;
+  }
+
   if (auth.isAuthenticated) {
     
 
@@ -266,6 +310,7 @@ function DtsViewEdit() {
                   Name
                   </label>
                   <input
+                    id={'input-'+dtsVO.id}
                     type="text"
                     placeholder="Choose a name for your DTS"
                     value={dtsVO?.name}
@@ -295,13 +340,13 @@ function DtsViewEdit() {
           </option>
 
       {(templateNames||[]).map((template, index) => (
-             
-            <option key={index} value={template.value} 
-            className="text-body dark:text-bodydark">
-              {template.name}
-            </option>
+
+        <option key={index} value={template.value} 
+        className="text-body dark:text-bodydark">
+          {template.name}
+        </option>
             
-            ))}
+      ))}
 
 
 
