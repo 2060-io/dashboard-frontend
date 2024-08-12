@@ -103,7 +103,7 @@ function DtsViewEdit() {
         const jsonData = load(e.target.value);
     
         const valid = validate(jsonData);
-        if (valid) {
+        if (valid && 'fastbot' === selectedOption.toLowerCase()) {
           setErrorDTSConf(false)
           setDtsVO({...dtsVO, config: e.target.value})
         } else {
@@ -383,6 +383,7 @@ useEffect(() => {
                   placeholder="Write your DTS Configuration"
                   value={dtsVO?.config}
                   onChange={checkConfigStructure}
+                  disabled={'fastbot' === selectedOption.toLowerCase() ? false : true}
                   className={`w-full rounded-lg border-[1.5px] focus:border-primary px-5 py-3 text-black outline-none transition active:border-primary disabled:cursor-default disabled:bg-whiter dark:focus:border-primary dark:text-white ${errorDTSConf ? "bg-red-200 placeholder-gray-3" : "border-stroke bg-transparent dark:border-form-strokedark dark:bg-form-input"}`}
                 ></textarea>
                      
