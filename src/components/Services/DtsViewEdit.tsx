@@ -192,7 +192,6 @@ function DtsViewEdit() {
 }, [auth, needsRefresh]);
 
 useEffect(() => {
-  console.log(selectedOption)
   if('' == selectedOption || 'newTemplateFk' == selectedOption){
     setSelectedOption(getNameTemplateCurrent())
   }
@@ -221,9 +220,7 @@ useEffect(() => {
     const config = new Configuration(configParameters);
     const api = new DtsResourceApi(config);
 
-    //console.log(dtsVO)
     if(false === isMatchNameServiceWithNameTemplate(selectedOption)){
-      //console.log(dtsVO)
       dtsVO.name = undefined !== dtsVO.title ? dtsVO.title : '';
       getDtsVO();
       return;
@@ -275,7 +272,6 @@ useEffect(() => {
   const getNameTemplateCurrent = () => {
     let nameTemplate = 'newTemplateFk';
     const wordsNameService = dtsVO.name?.toLowerCase().split(' ');
-    //console.log(wordsNameService)
     templateNames.forEach((template: TemplateInfo) => {
       const wordsNameTemplate = template.name.toLowerCase().split(' ');
       wordsNameTemplate.forEach((word: string) => {
