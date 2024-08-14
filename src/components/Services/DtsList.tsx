@@ -192,31 +192,35 @@ function DtsList() {
           <div className="flex items-left">
             <table>
               <tbody>
-                <td className="min-w-25">
-                  <button className="text-gray-700 dark:text-gray-300 underline hover:text-gray-900 dark:hover:text-gray-100 transition-colors ml-4"
-                    onClick={listDtsVOs}
-                  >
-                    Refresh
-                  </button>
-                </td>
+                <tr>
+                  <td className="min-w-25">
+                    <button className="text-gray-700 dark:text-gray-300 underline hover:text-gray-900 dark:hover:text-gray-100 transition-colors ml-4"
+                      onClick={listDtsVOs}
+                    >
+                      Refresh
+                    </button>
+                  </td>
+                </tr>
                 </tbody>
             </table>
           </div>
           <div className="flex items-center">
             <table>
               <tbody>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td className="w-60 min-w-60 text-right">
-                  <InputSearch></InputSearch>
-                </td>
-                <td className="w-[200px] min-w-[200px] text-center pr-3 pl-3">
-                  <SelectStateFilter className="w-full h-10 dark:bg-form-input"/>
-                </td>
-                <td className="w-[50px] min-w-[50px] text-center">
-                  <ButtonAddService className="rounded-full bg-white dark:bg-boxdark w-10 h-10 border-2 border-gray-300 dark:border-strokedark relative"/>
-                </td>
+                <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td className="w-60 min-w-60 text-right">
+                    <InputSearch></InputSearch>
+                  </td>
+                  <td className="w-[200px] min-w-[200px] text-center pr-3 pl-3">
+                    <SelectStateFilter className="w-full h-10 dark:bg-form-input"/>
+                  </td>
+                  <td className="w-[50px] min-w-[50px] text-center">
+                    <ButtonAddService className="rounded-full bg-white dark:bg-boxdark w-10 h-10 border-2 border-gray-300 dark:border-strokedark relative"/>
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
