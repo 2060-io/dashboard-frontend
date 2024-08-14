@@ -79,7 +79,7 @@ export function Pagination({
         <select
           value={itemsPerPage}
           onChange={handleItemsPerPageChange}
-          className="border rounded px-2 py-1"
+          className="border-[1.5px] border-stroke focus:border-primary dark:border-form-strokedark active:border-primary dark:focus:border-primary rounded dark:bg-form-input px-2 py-1"
         >
           <option value={5}>5</option>
           <option value={10}>10</option>

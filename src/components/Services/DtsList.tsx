@@ -178,7 +178,7 @@ function DtsList() {
         className={className}
         onClick={handleButtonClick}
       >
-        <span className="absolute text-2xl font-bold text-gray-600 dark:text-gray-300">
+        <span className="relative text-2xl font-bold text-gray-600 dark:text-gray-300">
         +
       </span>
       </button>
@@ -187,19 +187,38 @@ function DtsList() {
 
   if (auth.isAuthenticated) {
     return (
-      <div className="rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
-        <div className="mb-6 flex w-full flex-col sm:flex-row justify-between items-center px-4 space-y-4 sm:space-y-0">
-          <div>
-          <button className="text-gray-700 dark:text-gray-300 underline hover:text-gray-900 dark:hover:text-gray-100 transition-colors"
-            onClick={listDtsVOs}
-          >
-            Refresh
-          </button>
+      <div className="overflow-x-auto rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+        <div className="flex justify-between items-center mb-6">
+          <div className="flex items-left">
+            <table>
+              <tbody>
+                <td className="min-w-25">
+                  <button className="text-gray-700 dark:text-gray-300 underline hover:text-gray-900 dark:hover:text-gray-100 transition-colors ml-4"
+                    onClick={listDtsVOs}
+                  >
+                    Refresh
+                  </button>
+                </td>
+                </tbody>
+            </table>
           </div>
-          <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 items-center w-full sm:w-auto">
-            <InputSearch></InputSearch>
-            <SelectStateFilter className="w-full sm:w-auto h-10"/>
-            <ButtonAddService className="rounded-full bg-white dark:bg-boxdark w-10 h-10 border-2 border-gray-300 dark:border-strokedark flex items-center justify-center relative"/>
+          <div className="flex items-center">
+            <table>
+              <tbody>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td className="w-60 min-w-60 text-right">
+                  <InputSearch></InputSearch>
+                </td>
+                <td className="w-[200px] min-w-[200px] text-center pr-3 pl-3">
+                  <SelectStateFilter className="w-full h-10 dark:bg-form-input"/>
+                </td>
+                <td className="w-[50px] min-w-[50px] text-center">
+                  <ButtonAddService className="rounded-full bg-white dark:bg-boxdark w-10 h-10 border-2 border-gray-300 dark:border-strokedark relative"/>
+                </td>
+              </tbody>
+            </table>
           </div>
         </div>
         <div className="max-w-full">
@@ -313,10 +332,10 @@ function DtsList() {
             </tbody>
           </table>
         </div>
-        <div className="mb-6 flex w-full flex-col sm:flex-row justify-between items-center px-4 space-y-4 sm:space-y-0">
+        <div className="mb-6 mt-6 flex w-full flex-col sm:flex-row justify-between items-center px-4 space-y-4 sm:space-y-0">
           <div>
           </div>
-          <div className="-full sm:w-auto flex justify-center sm:justify-end">
+          <div className="max-w-full justify-center sm:justify-end">
             <Pagination
               itemsPerPage={itemsPerPage}
               setItemsPerPage={setItemsPerPage}
