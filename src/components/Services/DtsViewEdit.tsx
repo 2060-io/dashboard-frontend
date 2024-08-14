@@ -284,6 +284,16 @@ useEffect(() => {
     return nameTemplate;
   }
 
+  function camelCaseToLabelCase(str: string) {
+    str = str
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/^./, function (match) { return match.toUpperCase(); })
+      .replace(/\b\w/g, function (match) { return match.toUpperCase(); })
+      .trim();
+
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
   if (auth.isAuthenticated) {
     
 
@@ -326,6 +336,7 @@ useEffect(() => {
           value={selectedOption}
           onChange={handleChange}
           onBlur={refreshDtsTemplateFields}
+          disabled={('newTemplateFk'.toLowerCase() !== selectedOption.toLowerCase() === true ) ? false : true}
           className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent px-5 py-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary ${
             isOptionSelected ? "text-black dark:text-white" : "bg-red-200 placeholder-gray-3"
           }`}
@@ -389,7 +400,7 @@ useEffect(() => {
                      
                   </div>
 
-                  <div>
+                  <div className='mb-3'>
                   <label
                     htmlFor="checkboxLabelTwo"
                     className="flex cursor-pointer select-none items-center">
@@ -433,7 +444,7 @@ useEffect(() => {
 
                     <div className="mb-4.5" key={key}>
                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    { key }
+                    { camelCaseToLabelCase(key) }
                     </label>
                     <input
                       type="text"
