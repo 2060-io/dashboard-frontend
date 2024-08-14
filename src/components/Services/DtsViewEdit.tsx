@@ -137,7 +137,7 @@ function DtsViewEdit() {
     }
 }
   
-  let idinurl = pathname.replace("/services/", "");
+  const idinurl = pathname.replace("/services/", "");
 
   function listDtsTemplateVOs() {
     const configParameters: ConfigurationParameters = {
@@ -336,9 +336,10 @@ useEffect(() => {
           value={selectedOption}
           onChange={handleChange}
           onBlur={refreshDtsTemplateFields}
+          disabled={'new' !== idinurl}
           className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent px-5 py-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary ${
             isOptionSelected ? "text-black dark:text-white" : "bg-red-200 placeholder-gray-3"
-          }`}
+          } ${'new' !== idinurl ? "opacity-50 cursor-not-allowed bg-gray-200 text-gray-500 border-gray-300" : ""}`}
         >
 
           <option value="newTemplateFk" disabled className="text-body dark:text-bodydark">
