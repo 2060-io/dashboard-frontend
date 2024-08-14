@@ -284,6 +284,16 @@ useEffect(() => {
     return nameTemplate;
   }
 
+  function camelCaseToLabelCase(str: string) {
+    str = str
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/^./, function (match) { return match.toUpperCase(); })
+      .replace(/\b\w/g, function (match) { return match.toUpperCase(); })
+      .trim();
+
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
   if (auth.isAuthenticated) {
     
 
@@ -389,7 +399,7 @@ useEffect(() => {
                      
                   </div>
 
-                  <div>
+                  <div className='mb-3'>
                   <label
                     htmlFor="checkboxLabelTwo"
                     className="flex cursor-pointer select-none items-center">
@@ -433,7 +443,7 @@ useEffect(() => {
 
                     <div className="mb-4.5" key={key}>
                     <label className="mb-3 block text-sm font-medium text-black dark:text-white">
-                    { key }
+                    { camelCaseToLabelCase(key) }
                     </label>
                     <input
                       type="text"
