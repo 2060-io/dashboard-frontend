@@ -336,7 +336,6 @@ useEffect(() => {
           value={selectedOption}
           onChange={handleChange}
           onBlur={refreshDtsTemplateFields}
-          disabled={('newTemplateFk'.toLowerCase() !== selectedOption.toLowerCase() === true ) ? false : true}
           className={`relative z-20 w-full appearance-none rounded border border-stroke bg-transparent px-5 py-3 outline-none transition focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary ${
             isOptionSelected ? "text-black dark:text-white" : "bg-red-200 placeholder-gray-3"
           }`}
