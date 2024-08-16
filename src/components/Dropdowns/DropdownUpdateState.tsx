@@ -15,6 +15,7 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
   const dropdown = useRef<any>(null);
   const auth = useAuth();
   const router = useRouter();
+  const listServices = document.getElementById('list-services');
 
   // close on click outside
   useEffect(() => {
@@ -26,6 +27,7 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
         trigger.current.contains(target)
       )
         return;
+      addOverFlowToServicesList();
       setDropdownOpen(false);
     };
     document.addEventListener("click", clickHandler);
@@ -36,6 +38,7 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
   useEffect(() => {
     const keyHandler = (event: KeyboardEvent) => {
       if (!dropdownOpen || event.code !== 'Escape') return;
+      addOverFlowToServicesList();
       setDropdownOpen(false);
     }
     document.addEventListener("keydown", keyHandler);
@@ -68,13 +71,23 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
     genericEntityResourceApi.genericStateEntityTypeIdNewStatePut(requesParameters).
     then(() => {
       router.refresh()
+      addOverFlowToServicesList();
       setDropdownOpen(false);
     }).
     catch( () => {
       showToastWarningUpdateState('toast-'+idService);
       router.refresh()
+      addOverFlowToServicesList();
       setDropdownOpen(false);
     })
+  }
+
+  function removeOverFlowToServicesList(): void {
+    listServices?.classList.remove('overflow-x-auto');
+  }
+
+  function addOverFlowToServicesList(): void {
+    listServices?.classList.add('overflow-x-auto');
   }
 
   return (
@@ -82,7 +95,13 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
       <button
         className={`w-full font-medium bg-transparent text-center ${setStyleState(String(dts.state))}`}
         ref={trigger}
-        onClick={() => setDropdownOpen(!dropdownOpen)}
+        onClick={
+          () => {
+            removeOverFlowToServicesList();
+            console.log(dropdownOpen)
+            setDropdownOpen(!dropdownOpen)
+          }
+        }
       >
         {dts.state}
         <svg
@@ -103,7 +122,12 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
       </button>
       <div
         ref={dropdown}
-        onFocus={() => setDropdownOpen(true)}
+        onFocus={
+          () => {
+            removeOverFlowToServicesList();
+            setDropdownOpen(true)
+          }
+        }
         onBlur={() => setDropdownOpen(false)}
         className={`absolute right-0 top-full z-40 w-40 space-y-1 rounded-sm border border-stroke bg-white p-1.5 shadow-default dark:border-strokedark dark:bg-boxdark ${dropdownOpen === true ? "block" : "hidden"}`}
       >

@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import SidebarLinkGroup from "./SidebarLinkGroup";
 import { validate } from "uuid";
+import { useAuth } from "react-oidc-context";
 
 interface SidebarProps {
   sidebarOpen: boolean;
@@ -29,6 +30,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const [sidebarExpanded, setSidebarExpanded] = useState(
     storedSidebarExpanded === null ? false : storedSidebarExpanded === "true",
   );
+
+  const auth = useAuth();
 
   // close on click outside
   useEffect(() => {
@@ -170,9 +173,10 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                         </svg>
                         Service Provider
                         <svg
-                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
-                            open && "rotate-180"
-                          }`}
+                          className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current
+                            ${open && "rotate-180"}
+                            ${!auth.isAuthenticated && "invisible"}
+                          `}
                           width="20"
                           height="20"
                           viewBox="0 0 20 20"
@@ -245,35 +249,36 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
                           />
                         </svg>
                       </Link>*/}
-
-                      <div
-                        className={`overflow-hidden ${
-                          !open ? "h-0" :  "h-21"
-                        } transition-height duration-500 ease-in-out`}
-                      >
-                        <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
-                          <li>
-                            <Link
-                              href="/services"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${
-                                pathname === "/services" && "text-white"
-                              }`}
-                            >
-                              Services
-                            </Link>
-                          </li>
-                          <li>
-                            <Link
-                              href="/templates"
-                              className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${
-                                pathname === "/templates" && "text-white"
-                              }`}
-                            >
-                              Templates
-                            </Link>
-                          </li>
-                        </ul>
-                      </div>
+                      {auth.isAuthenticated ? (
+                        <div
+                          className={`overflow-hidden ${
+                            !open ? "h-0" :  "h-21"
+                          } transition-height duration-500 ease-in-out`}
+                        >
+                          <ul className="mb-5.5 mt-4 flex flex-col gap-2.5 pl-6">
+                            <li>
+                              <Link
+                                href="/services"
+                                className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${
+                                  pathname === "/services" && "text-white"
+                                }`}
+                              >
+                                Services
+                              </Link>
+                            </li>
+                            <li>
+                              <Link
+                                href="/templates"
+                                className={`group relative flex items-center gap-2.5 rounded-md px-4 font-medium text-bodydark2 duration-300 ease-in-out hover:text-white ${
+                                  pathname === "/templates" && "text-white"
+                                }`}
+                              >
+                                Templates
+                              </Link>
+                            </li>
+                          </ul>
+                        </div>
+                      ) : (<label></label>)}
                     </React.Fragment>
                   );
                 }}
