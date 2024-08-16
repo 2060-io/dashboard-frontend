@@ -27,7 +27,6 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
         trigger.current.contains(target)
       )
         return;
-      addOverFlowToServicesList();
       setDropdownOpen(false);
     };
     document.addEventListener("click", clickHandler);
@@ -38,12 +37,23 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
   useEffect(() => {
     const keyHandler = (event: KeyboardEvent) => {
       if (!dropdownOpen || event.code !== 'Escape') return;
-      addOverFlowToServicesList();
       setDropdownOpen(false);
     }
     document.addEventListener("keydown", keyHandler);
     return () => document.removeEventListener("keydown", keyHandler);
   });
+
+  // resize of the window
+  useEffect(() => {
+    window.addEventListener('resize', () => {
+      if(Number(window.innerWidth) < 1300){
+        listServices?.classList.add('overflow-x-auto');
+      }
+      else{
+        listServices?.classList.remove('overflow-x-auto');
+      }
+    })
+  })
 
   function setStyleState(state: string): string {
     let color = 'text-black';
@@ -52,7 +62,7 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
   }
 
   async function updateStateEntity (idService: string, entityState: string){
-    await setInitClassNameToastWarning(idService);
+    setInitClassNameToastWarning(idService);
     const configParameters: ConfigurationParameters = {
       headers: {
         'Authorization': 'Bearer ' + auth.user?.access_token ,
@@ -71,23 +81,13 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
     genericEntityResourceApi.genericStateEntityTypeIdNewStatePut(requesParameters).
     then(() => {
       router.refresh()
-      addOverFlowToServicesList();
       setDropdownOpen(false);
     }).
     catch( () => {
       showToastWarningUpdateState('toast-'+idService);
       router.refresh()
-      addOverFlowToServicesList();
       setDropdownOpen(false);
     })
-  }
-
-  function removeOverFlowToServicesList(): void {
-    listServices?.classList.remove('overflow-x-auto');
-  }
-
-  function addOverFlowToServicesList(): void {
-    listServices?.classList.add('overflow-x-auto');
   }
 
   return (
@@ -97,8 +97,6 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
         ref={trigger}
         onClick={
           () => {
-            removeOverFlowToServicesList();
-            console.log(dropdownOpen)
             setDropdownOpen(!dropdownOpen)
           }
         }
@@ -122,14 +120,9 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
       </button>
       <div
         ref={dropdown}
-        onFocus={
-          () => {
-            removeOverFlowToServicesList();
-            setDropdownOpen(true)
-          }
-        }
+        onFocus={() => setDropdownOpen(true)}
         onBlur={() => setDropdownOpen(false)}
-        className={`absolute right-0 top-full z-40 w-40 space-y-1 rounded-sm border border-stroke bg-white p-1.5 shadow-default dark:border-strokedark dark:bg-boxdark ${dropdownOpen === true ? "block" : "hidden"}`}
+        className={`absolute overflow-visible right-0 top-full z-40 w-40 space-y-1 rounded-sm border border-stroke bg-white p-1.5 shadow-default dark:border-strokedark dark:bg-boxdark ${dropdownOpen === true ? "block" : "hidden"}`}
       >
         {
           Object.values(EntityState).map((state, index) => {
