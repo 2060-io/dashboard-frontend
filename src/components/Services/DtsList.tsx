@@ -187,7 +187,7 @@ function DtsList() {
 
   if (auth.isAuthenticated) {
     return (
-      <div className="overflow-x-auto rounded-sm border border-stroke bg-white px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+      <div className="xsm:overflow-x-auto 2xsm:overflow-x-auto sm:overflow-x-auto md:overflow-x-auto lg:overflow-x-auto xl:overflow-x-visible 2xl:overflow-x-visible 3xl:overflow-x-visible rounded-sm border border-stroke px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1" id="list-services">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-left">
             <table>

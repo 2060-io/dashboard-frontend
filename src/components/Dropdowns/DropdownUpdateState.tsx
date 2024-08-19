@@ -49,7 +49,7 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
   }
 
   async function updateStateEntity (idService: string, entityState: string){
-    await setInitClassNameToastWarning(idService);
+    setInitClassNameToastWarning(idService);
     const configParameters: ConfigurationParameters = {
       headers: {
         'Authorization': 'Bearer ' + auth.user?.access_token ,
@@ -82,7 +82,11 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
       <button
         className={`w-full font-medium bg-transparent text-center ${setStyleState(String(dts.state))}`}
         ref={trigger}
-        onClick={() => setDropdownOpen(!dropdownOpen)}
+        onClick={
+          () => {
+            setDropdownOpen(!dropdownOpen)
+          }
+        }
       >
         {dts.state}
         <svg
@@ -105,7 +109,7 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
         ref={dropdown}
         onFocus={() => setDropdownOpen(true)}
         onBlur={() => setDropdownOpen(false)}
-        className={`absolute right-0 top-full z-40 w-40 space-y-1 rounded-sm border border-stroke bg-white p-1.5 shadow-default dark:border-strokedark dark:bg-boxdark ${dropdownOpen === true ? "block" : "hidden"}`}
+        className={`absolute overflow-visible right-0 top-full z-40 w-40 space-y-1 rounded-sm border border-stroke bg-white p-1.5 shadow-default dark:border-strokedark dark:bg-boxdark ${dropdownOpen === true ? "block" : "hidden"}`}
       >
         {
           Object.values(EntityState).map((state, index) => {
