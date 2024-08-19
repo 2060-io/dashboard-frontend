@@ -15,7 +15,6 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
   const dropdown = useRef<any>(null);
   const auth = useAuth();
   const router = useRouter();
-  const listServices = document.getElementById('list-services');
 
   // close on click outside
   useEffect(() => {
@@ -42,18 +41,6 @@ export const DropdownUpdateState: React.FC<DropdownUpdateStateProps> = ({dts}) =
     document.addEventListener("keydown", keyHandler);
     return () => document.removeEventListener("keydown", keyHandler);
   });
-
-  // resize of the window
-  useEffect(() => {
-    window.addEventListener('resize', () => {
-      if(Number(window.innerWidth) < 1300){
-        listServices?.classList.add('overflow-x-auto');
-      }
-      else{
-        listServices?.classList.remove('overflow-x-auto');
-      }
-    })
-  })
 
   function setStyleState(state: string): string {
     let color = 'text-black';
