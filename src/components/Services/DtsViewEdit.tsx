@@ -11,6 +11,8 @@ import SelectDtsTemplate from '../Templates/SelectDtsTemplate';
 import {v4 as uuidv4} from 'uuid';
 import Ajv from 'ajv';
 import { load } from 'js-yaml';
+import Editor from '@monaco-editor/react';
+import YamlEditor from '../MonacoEditor/YamlEditor';
 
 type ApiGitHub = {
   name: string;
@@ -389,14 +391,20 @@ useEffect(() => {
                 <label className="mb-3 block text-sm font-medium text-black dark:text-white">
                 DTS Configuration
                 </label>
-                <textarea
+                <div
+                  className={`w-full rounded-lg border-[1.5px] focus:border-primary text-black outline-none transition active:border-primary disabled:cursor-default disabled:bg-whiter dark:focus:border-primary dark:text-white border-stroke bg-transparent dark:border-form-strokedark dark:bg-form-input mb-3`}
+                >
+                {/* <div className='pointer-events-none opacity-50'> */}
+                  <YamlEditor textYaml={dtsVO?.config}></YamlEditor>
+                </div>
+                {/* <textarea
                   rows={6}
                   placeholder="Write your DTS Configuration"
                   value={dtsVO?.config}
                   onChange={checkConfigStructure}
                   disabled={'fastbot' === selectedOption.toLowerCase() ? false : true}
-                  className={`w-full rounded-lg border-[1.5px] focus:border-primary px-5 py-3 text-black outline-none transition active:border-primary disabled:cursor-default disabled:bg-whiter dark:focus:border-primary dark:text-white ${errorDTSConf ? "bg-red-200 placeholder-gray-3" : "border-stroke bg-transparent dark:border-form-strokedark dark:bg-form-input"}`}
-                ></textarea>
+                  className={`invisible w-full rounded-lg border-[1.5px] focus:border-primary px-5 py-3 text-black outline-none transition active:border-primary disabled:cursor-default disabled:bg-whiter dark:focus:border-primary dark:text-white ${errorDTSConf ? "bg-red-200 placeholder-gray-3" : "border-stroke bg-transparent dark:border-form-strokedark dark:bg-form-input"}`}
+                ></textarea> */}
                      
                   </div>
 
