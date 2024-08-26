@@ -97,7 +97,7 @@ export interface DtsVO {
      * @type {{ [key: string]: string; }}
      * @memberof DtsVO
      */
-    deploymentConfig?: { [key: string]: string; };
+    deploymentConfig?: string;
 }
 
 /**
