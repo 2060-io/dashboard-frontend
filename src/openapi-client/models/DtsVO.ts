@@ -82,6 +82,12 @@ export interface DtsVO {
     templateFk?: string;
     /**
      * 
+     * @type {string}
+     * @memberof DtsVO
+     */
+    collectionFk?: string;
+    /**
+     * 
      * @type {boolean}
      * @memberof DtsVO
      */
@@ -126,6 +132,7 @@ export function DtsVOFromJSONTyped(json: any, ignoreDiscriminator: boolean): Dts
         'name': json['name'] == null ? undefined : json['name'],
         'config': json['config'] == null ? undefined : json['config'],
         'templateFk': json['templateFk'] == null ? undefined : json['templateFk'],
+        'collectionFk': json['collectionFk'] == null ? undefined : json['collectionFk'],
         'debug': json['debug'] == null ? undefined : json['debug'],
         'createdTs': json['createdTs'] == null ? undefined : (new Date(json['createdTs'])),
         'deploymentConfig': json['deploymentConfig'] == null ? undefined : json['deploymentConfig'],
@@ -147,6 +154,7 @@ export function DtsVOToJSON(value?: DtsVO | null): any {
         'name': value['name'],
         'config': value['config'],
         'templateFk': value['templateFk'],
+        'collectionFk': value['collectionFk'],
         'debug': value['debug'],
         'createdTs': value['createdTs'] == null ? undefined : ((value['createdTs']).toISOString()),
         'deploymentConfig': value['deploymentConfig'],
