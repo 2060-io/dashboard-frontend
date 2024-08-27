@@ -9,6 +9,7 @@ export * from './CampaignScheduleVO';
 export * from './CampaignType';
 export * from './CampaignTypeFilter';
 export * from './CampaignVO';
+export * from './DtscCollectionVO';
 export * from './DtsFilter';
 export * from './DtsTemplateFilter';
 export * from './DtsTemplateVO';

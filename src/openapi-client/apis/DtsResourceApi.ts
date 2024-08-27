@@ -22,6 +22,8 @@ import type {
 import {
     DtsFilterFromJSON,
     DtsFilterToJSON,
+    DtscCollectionVO,
+    DtscCollectionVOToJSON,
     DtsVOFromJSON,
     DtsVOToJSON,
     ErrorResponseFromJSON,
@@ -223,6 +225,37 @@ export class DtsResourceApi extends runtime.BaseAPI {
      */
     async dtsSavePost(requestParameters: DtsSavePostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.dtsSavePostRaw(requestParameters, initOverrides);
+    }
+
+    /**
+     * List Dts Collections
+     * List Dts Collections
+     */
+    async dtscListPostRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DtscCollectionVO>>> {
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {}
+
+        headerParameters['Content-Type'] = 'application/json';
+
+        const response = await this.request({
+            path: '/dtsc/list',
+            method: 'POST',
+            headers: headerParameters,
+            query: queryParameters,
+            body: DtscCollectionVOToJSON
+        });
+
+        return new runtime.JSONApiResponse(response)
+    }
+
+    /**
+     * List Dts Collections
+     * List Dts Collections
+     */
+    async dtscListPost(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DtscCollectionVO>>{
+        const response = await this.dtscListPostRaw(initOverrides);
+        return await response.value();
     }
 
 }

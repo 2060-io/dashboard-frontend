@@ -10,7 +10,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import SelectDtsTemplate from '../Templates/SelectDtsTemplate';
 import {v4 as uuidv4} from 'uuid';
 import Ajv from 'ajv';
-import { load } from 'js-yaml';
+import { load, dump } from 'js-yaml';
 
 type ApiGitHub = {
   name: string;
@@ -118,7 +118,18 @@ function DtsViewEdit() {
 
   const listTemplateNames = async () => {
     try {
-        const response = await fetch(`https://api.github.com/repos/${process.env.NEXT_PUBLIC_TEMPLATE_DIR??''}/contents`);
+      const configParameters: ConfigurationParameters = {
+        headers: {
+          Authorization: "Bearer " + auth.user?.access_token,
+        },
+        basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH,
+      };
+      const config = new Configuration(configParameters);
+      const api = new DtsResourceApi(config);
+      const dtscCollectionList = await api.dtscListPost();
+      const dtscCollecion = dtscCollectionList[0];
+
+        const response = await fetch(`https://api.github.com/repos/${dtscCollecion.template+'/'+dtscCollecion.templateRepo}/contents`);
         const data: ApiGitHub[] = await response.json();
         const folders = data.filter((item:ApiGitHub) => item.type === 'dir' && !item.name.startsWith('.'));
         
@@ -127,8 +138,6 @@ function DtsViewEdit() {
             value: folder.name,
             schema: folder.name === "Fastbot" ? process.env.NEXT_PUBLIC_TEMPLATE_DIR : null
         }));
-        // const currentTemplate = { name: "Current", value: "current", schema:null };
-        // templates = [currentTemplate, ...templates];
 
         templates = [...templates];     
       setTemplateNames(templates);
@@ -171,7 +180,7 @@ function DtsViewEdit() {
       const config = new Configuration(configParameters);
       const api = new DtsResourceApi(config);
       
-      api.dtsGetIdGet({ id: idinurl}).then((resp) => { 
+      api.dtsGetIdGet({ id: idinurl}).then((resp) => {
         if (resp) {
           setDtsVO(resp);
           setIsOptionSelected(true);
@@ -198,14 +207,19 @@ useEffect(() => {
 });
 
   function getDeploymentConfigKeys(): string[] {
+    const deploymentConfig = dtsVO?.deploymentConfig ? load(String(dtsVO.deploymentConfig)) : null;
+    return deploymentConfig ? Object.keys(deploymentConfig) : [];
+  }
 
-    let keylist:  string[] = [];
+  function getDeploymentConfigValues(key: string): string {
+    const deploymenConfig = JSON.parse(JSON.stringify(load(String(dtsVO?.deploymentConfig))));
+    return String(deploymenConfig[key] ?? '') 
+  }
 
-    for (const key in dtsVO?.deploymentConfig)
-      {
-        keylist.push(key);   
-      }
-    return keylist;
+  function getDeployMentConfig(prevState: DtsVO, e: React.ChangeEvent<HTMLInputElement>, key: string): string{
+    const objeto = JSON.parse(JSON.stringify(load(String(prevState.deploymentConfig))));
+    const config = {...objeto, [key]: e.target.value}
+    return dump(config)
   }
 
   async function saveDtsVO() {
@@ -230,6 +244,7 @@ useEffect(() => {
       await saveDtsTemplateVO()
       await api.dtsSavePost({ dtsVO: dtsVO });
     } catch (error) {
+      console.error(error)
     }
     const id = dtsVO?.id ?? "new";
     if (pathname.includes("new")) router.push(pathname.replace("new",id))
@@ -448,17 +463,14 @@ useEffect(() => {
                     </label>
                     <input
                       type="text"
-                      value={dtsVO?.deploymentConfig && dtsVO.deploymentConfig[key] || ''}
+                      value={getDeploymentConfigValues(key)}
                       onChange={(e) => {
                         setDtsVO(prevState => ({
                           ...prevState,
-                          deploymentConfig: {
-                            ...prevState?.deploymentConfig,
-                            [key]: e.target.value
-                          }
+                          deploymentConfig: getDeployMentConfig(prevState, e, key)
                         }));
                       }}
-                      className={`w-full rounded border-[1.5px] px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:text-white ${dtsVO?.deploymentConfig ? checkErrorMinSize(String(dtsVO.deploymentConfig[key])) ? "bg-red-200 placeholder-gray-3" : "border-stroke  bg-transparent dark:focus:border-primary dark:border-form-strokedark dark:bg-form-input" : "" }`}
+                      className={`w-full rounded border-[1.5px] px-5 py-3 text-black outline-none transition focus:border-primary active:border-primary disabled:cursor-default disabled:bg-whiter dark:text-white ${dtsVO?.deploymentConfig ? checkErrorMinSize(getDeploymentConfigValues(key)) ? "bg-red-200 placeholder-gray-3" : "border-stroke  bg-transparent dark:focus:border-primary dark:border-form-strokedark dark:bg-form-input" : "" }`}
                     />
                   </div>
                  ))}
