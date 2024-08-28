@@ -94,6 +94,18 @@ export interface DtsVO {
     debug?: boolean;
     /**
      * 
+     * @type {number}
+     * @memberof DtsVO
+     */
+    connection?: number;
+    /**
+     * 
+     * @type {Date}
+     * @memberof DtsVO
+     */
+    modifiedTs?: Date;
+    /**
+     * 
      * @type {Date}
      * @memberof DtsVO
      */
@@ -134,6 +146,8 @@ export function DtsVOFromJSONTyped(json: any, ignoreDiscriminator: boolean): Dts
         'templateFk': json['templateFk'] == null ? undefined : json['templateFk'],
         'collectionFk': json['collectionFk'] == null ? undefined : json['collectionFk'],
         'debug': json['debug'] == null ? undefined : json['debug'],
+        'connection': json['connection'] == null ? 0 : json['connection'],
+        'modifiedTs': json['modifiedTs'] == null ? undefined : (new Date(json['modifiedTs'])),
         'createdTs': json['createdTs'] == null ? undefined : (new Date(json['createdTs'])),
         'deploymentConfig': json['deploymentConfig'] == null ? undefined : json['deploymentConfig'],
     };
@@ -156,6 +170,8 @@ export function DtsVOToJSON(value?: DtsVO | null): any {
         'templateFk': value['templateFk'],
         'collectionFk': value['collectionFk'],
         'debug': value['debug'],
+        'connection': value['connection'] == null ? 0 : value['connection'],
+        'modifiedTs': value['modifiedTs'] == null ? undefined : ((value['modifiedTs']).toISOString()),
         'createdTs': value['createdTs'] == null ? undefined : ((value['createdTs']).toISOString()),
         'deploymentConfig': value['deploymentConfig'],
     };
