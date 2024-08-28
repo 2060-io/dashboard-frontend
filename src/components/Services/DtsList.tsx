@@ -294,13 +294,13 @@ function DtsList() {
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 text-center dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
-                      Connections
+                      {dts.connection}
                     </h5>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 text-center dark:border-strokedark xl:pl-11">
-                  {dts.createdTs && (
+                  {dts.modifiedTs && (
                     <h5 className="font-medium text-black dark:text-white">
-                      {`${dts.createdTs.getFullYear()}-${(dts.createdTs.getMonth() + 1).toString().padStart(2, '0')}-${dts.createdTs.getDate().toString().padStart(2, '0')}`}
+                      {`${dts.modifiedTs.getFullYear()}-${(dts.modifiedTs.getMonth() + 1).toString().padStart(2, '0')}-${dts.modifiedTs.getDate().toString().padStart(2, '0')}`}
                     </h5>
                   )}
                   </td>
