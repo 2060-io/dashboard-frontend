@@ -2,10 +2,12 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
+  DtscGetIdGetRequest,
   DtsListPostRequest,
   DtsResourceApi,
 } from "../../openapi-client/apis/DtsResourceApi";
 import {
+  DtscCollectionVO,
   DtsVO,
   EntityState,
 } from "../../openapi-client/models";
@@ -15,6 +17,24 @@ import { useAuth } from "react-oidc-context";
 import { Log } from "oidc-client-ts";
 import Link from "next/link";
 import { Pagination, WarningTimedToast, DropdownUpdateState } from "./index";
+
+interface TemplateDataInfo {
+  /**
+     * 
+     * @type {string}
+     */
+  idService: string | undefined;
+  /**
+     * 
+     * @type {string}
+     */
+  templateRepo: string | undefined;
+  /**
+     * 
+     * @type {string}
+     */
+  template: string | undefined;
+}
 
 const sortItems = <T extends Record<string, any>>(
   items: T[],
@@ -39,6 +59,7 @@ function DtsList() {
   const [sortKey, setSortKey] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
   const visiblePages = 4;
+  const [templatesDatasInfo, setTemplatesDatasInfo] = useState<TemplateDataInfo[]>()
 
   const filterByDts = (item: DtsVO) => item.name?.toLowerCase().includes(searchDts.toLowerCase());
   const filterByState = (item: DtsVO) => item.state?.toLowerCase().includes(filterState.toLowerCase());
@@ -68,16 +89,22 @@ function DtsList() {
   Log.setLogger(console);
   Log.setLevel(Log.DEBUG);
 
-  function listDtsVOs() {
+  function createDtsResourceApi(): DtsResourceApi {
     const configParameters: ConfigurationParameters = {
       headers: {
-        Authorization: "Bearer " + auth.user?.access_token,
+        Authorization: "Bearer " + auth.user?.access_token, // Se asume que auth está disponible en el scope global o de módulo.
       },
-      basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH,
+      basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH, // Se utiliza la variable de entorno directamente.
     };
-
+  
     const config = new Configuration(configParameters);
     const api = new DtsResourceApi(config);
+  
+    return api;
+  }
+
+  function listDtsVOs() {
+    const api = createDtsResourceApi();
 
     class DtsFilterClass implements DtsFilter {
       state?: EntityState;
@@ -91,7 +118,10 @@ function DtsList() {
     const requestParameters = new DtsListPostRequestClass();
     requestParameters.dtsFilter = filterw;
 
-    api.dtsListPost(requestParameters).then((resp) => setDtsVOs(resp))
+    api.dtsListPost(requestParameters).then((resp) => {
+      getTemplatesInfoData(resp)
+      setDtsVOs(resp)
+    })
         .catch((error) => setDtsVOs([
           {description: "Description",state: EntityState.Editing,name: "Default name",debug: false, createdTs: new Date()},
           {description: "Description 2",state: EntityState.Enabled,name: "Default name 2",debug: false, createdTs: new Date()},
@@ -184,6 +214,50 @@ function DtsList() {
       </button>
     );
   }
+
+  async function getDtscCollection(collectionFk: string): Promise<DtscCollectionVO> {
+    const api = createDtsResourceApi();
+    const collecFk: DtscGetIdGetRequest = { id: collectionFk };
+    return api.dtscGetIdGet(collecFk);
+  }
+
+  async function templateData(collectionFk: string, idService: string): Promise<TemplateDataInfo> {
+    try {
+      const response = await getDtscCollection(collectionFk);
+      return {
+        idService,
+        templateRepo: response.templateRepo,
+        template: response.template,
+      };
+    } catch (error) {
+      return {
+        idService,
+        templateRepo: "no repository",
+        template: "no template",
+      };
+    }
+  }
+
+  async function getTemplatesInfoData(dtsVOs: DtsVO[]): Promise<void> {
+    const templatePromises = dtsVOs.map((dts) =>
+      templateData(String(dts.collectionFk), String(dts.id))
+    );
+
+    const templDatasInfo = await Promise.all(templatePromises);
+
+    if (!templatesDatasInfo) {
+      setTemplatesDatasInfo(templDatasInfo);
+    }
+  }
+
+  function getTemplateDataInfo(idService: string): TemplateDataInfo {
+    return (
+      templatesDatasInfo?.find(
+        (templateDataInfo) => idService === String(templateDataInfo.idService)
+      ) ?? { idService: '', templateRepo: 'no repository', template: 'no template' }
+    );
+  }
+
 
   if (auth.isAuthenticated) {
     return (
@@ -284,12 +358,12 @@ function DtsList() {
 
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 text-center dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
-                      Template Repo
+                      {getTemplateDataInfo(String(dts.id)).templateRepo}
                     </h5>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 text-center dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
-                      Template
+                    {getTemplateDataInfo(String(dts.id)).template}
                     </h5>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 text-center dark:border-strokedark xl:pl-11">
