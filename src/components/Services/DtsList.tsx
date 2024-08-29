@@ -24,6 +24,11 @@ interface TemplateDataInfo {
      * @type {string}
      */
   idService: string | undefined;
+   /**
+     * 
+     * @type {string}
+     */
+   idCollection: string | undefined;
   /**
      * 
      * @type {string}
@@ -63,13 +68,26 @@ function DtsList() {
 
   const filterByDts = (item: DtsVO) => item.name?.toLowerCase().includes(searchDts.toLowerCase());
   const filterByState = (item: DtsVO) => item.state?.toLowerCase().includes(filterState.toLowerCase());
+  const filterByCollectionFk = (item: DtsVO) => item.collectionFk == getCollectionFk();
 
-  const filteredItems = useMemo(() => {
-    return dtsVOs.filter(filterByDts).filter(filterByState);
-  }, [dtsVOs, filterByDts, filterByState]);
-  const sortedItems = useMemo(() => {
-    return sortItems(filteredItems, sortKey, sortOrder);
-  }, [filteredItems, sortKey, sortOrder]);
+  const getCollectionFk = (): string =>
+    templatesDatasInfo?.find(
+      ({ template, templateRepo }: TemplateDataInfo) =>
+        template?.toLowerCase().includes(searchDts.toLowerCase()) ||
+        templateRepo?.toLowerCase().includes(searchDts.toLowerCase())
+    )?.idCollection ?? '';
+
+  const filteredItems = useMemo(() => 
+    dtsVOs.filter(
+      item => (filterByDts(item) || filterByCollectionFk(item)) && filterByState(item)
+    ),
+    [dtsVOs, filterByDts, filterByCollectionFk, filterByState]
+  );
+
+  const sortedItems = useMemo(
+    () => sortItems(filteredItems, sortKey, sortOrder),
+    [filteredItems, sortKey, sortOrder]
+  );
 
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -225,13 +243,15 @@ function DtsList() {
     try {
       const response = await getDtscCollection(collectionFk);
       return {
-        idService,
+        idService: idService,
+        idCollection: collectionFk,
         templateRepo: response.templateRepo,
         template: response.template,
       };
     } catch (error) {
       return {
-        idService,
+        idService: 'undefined',
+        idCollection: 'undefined',
         templateRepo: "no repository",
         template: "no template",
       };
@@ -254,7 +274,7 @@ function DtsList() {
     return (
       templatesDatasInfo?.find(
         (templateDataInfo) => idService === String(templateDataInfo.idService)
-      ) ?? { idService: '', templateRepo: 'no repository', template: 'no template' }
+      ) ?? { idService: 'undefined', idCollection: 'undefined', templateRepo: 'no repository', template: 'no template' }
     );
   }
 
