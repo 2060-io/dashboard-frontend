@@ -18,29 +18,6 @@ import { Log } from "oidc-client-ts";
 import Link from "next/link";
 import { Pagination, WarningTimedToast, DropdownUpdateState } from "./index";
 
-interface TemplateDataInfo {
-  /**
-     * 
-     * @type {string}
-     */
-  idService: string | undefined;
-   /**
-     * 
-     * @type {string}
-     */
-   idCollection: string | undefined;
-  /**
-     * 
-     * @type {string}
-     */
-  templateRepo: string | undefined;
-  /**
-     * 
-     * @type {string}
-     */
-  template: string | undefined;
-}
-
 const sortItems = <T extends Record<string, any>>(
   items: T[],
   sortKey: string,
@@ -64,18 +41,18 @@ function DtsList() {
   const [sortKey, setSortKey] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
   const visiblePages = 4;
-  const [templatesDatasInfo, setTemplatesDatasInfo] = useState<TemplateDataInfo[]>()
+  const [DtsCollectionVOs, setDtsCollectionVOs] = useState<DtsCollectionVO[]>()
 
   const filterByDts = (item: DtsVO) => item.name?.toLowerCase().includes(searchDts.toLowerCase());
   const filterByState = (item: DtsVO) => item.state?.toLowerCase().includes(filterState.toLowerCase());
   const filterByCollectionFk = (item: DtsVO) => item.collectionFk == getCollectionFk();
 
   const getCollectionFk = (): string =>
-    templatesDatasInfo?.find(
-      ({ template, templateRepo }: TemplateDataInfo) =>
+    DtsCollectionVOs?.find(
+      ({ template, templateRepo }: DtsCollectionVO) =>
         template?.toLowerCase().includes(searchDts.toLowerCase()) ||
         templateRepo?.toLowerCase().includes(searchDts.toLowerCase())
-    )?.idCollection ?? '';
+    )?.id ?? '';
 
   const filteredItems = useMemo(() => 
     dtsVOs.filter(
@@ -103,13 +80,6 @@ function DtsList() {
   };
 
   const auth = useAuth();
-
-  const noTemplateData: TemplateDataInfo = {
-    idService: 'no service',
-    idCollection: 'uuid',
-    templateRepo: "no repository",
-    template: "no template",
-  };
 
   Log.setLogger(console);
   Log.setLevel(Log.DEBUG);
@@ -248,38 +218,31 @@ function DtsList() {
     return api.dtscGetIdGet(collecFk);
   }
 
-  async function templateData(collectionFk: string, idService: string): Promise<TemplateDataInfo> {
+  async function getDtsCollectionVO(collectionFk: string): Promise<DtsCollectionVO> {
     try {
-      const response = await getDtscCollection(collectionFk);
-      return {
-        idService: idService,
-        idCollection: collectionFk,
-        templateRepo: response.templateRepo,
-        template: response.template,
-      };
+      return await getDtscCollection(collectionFk);
     } catch (error) {
-      return noTemplateData
+      return {}
     }
   }
 
   async function getTemplatesInfoData(dtsVOs: DtsVO[]): Promise<void> {
     const templatePromises = dtsVOs.map((dts) =>
-      templateData(String(dts.collectionFk), String(dts.id))
+      getDtsCollectionVO(String(dts.collectionFk))
     );
 
-    const templDatasInfo = await Promise.all(templatePromises);
-    console.log()
+    const dtsCollectionVO = await Promise.all(templatePromises);
 
-    if (!templatesDatasInfo) {
-      setTemplatesDatasInfo(templDatasInfo);
+    if (!DtsCollectionVOs) {
+      setDtsCollectionVOs(dtsCollectionVO);
     }
   }
 
-  function getTemplateDataInfo(idService: string): TemplateDataInfo {
+  function getDtsCollection(idCollection: string): DtsCollectionVO {
     return (
-      templatesDatasInfo?.find(
-        (templateDataInfo) => idService === String(templateDataInfo.idService)
-      ) ?? noTemplateData
+      DtsCollectionVOs?.find(
+        (dtsCollectionVO) => idCollection === String(dtsCollectionVO.id)
+      ) ?? {}
     );
   }
 
@@ -383,12 +346,12 @@ function DtsList() {
 
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 text-center dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
-                      {getTemplateDataInfo(String(dts.id)).templateRepo}
+                      {getDtsCollection(String(dts.collectionFk))?.templateRepo ?? 'no repo'}
                     </h5>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 text-center dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
-                    {getTemplateDataInfo(String(dts.id)).template}
+                    {getDtsCollection(String(dts.collectionFk))?.template ?? 'no template' }
                     </h5>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 text-center dark:border-strokedark xl:pl-11">
