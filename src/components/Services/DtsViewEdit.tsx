@@ -1,13 +1,11 @@
 "use client";
 
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import { DtsListPostRequest, DtsResourceApi } from '../../openapi-client/apis/DtsResourceApi'; 
-import { DtsFilterFromJSON, DtsTemplateVO, DtsVO, EntityState, DtsType } from '../../openapi-client/models';
-import { DtsFilter } from '../../openapi-client/models';
-import { Configuration, ConfigurationParameters, DtsTemplateResourceApi } from '../../openapi-client';
+import { DtsResourceApi } from './index'; 
+import { DtsTemplateVO, DtsVO, EntityState, DtsType } from './index';
+import { Configuration, ConfigurationParameters, DtsCollectionResourceApi, DtsTemplateResourceApi } from './index';
 import { useAuth } from "react-oidc-context";
 import { usePathname, useRouter } from 'next/navigation';
-import SelectDtsTemplate from '../Templates/SelectDtsTemplate';
 import {v4 as uuidv4} from 'uuid';
 import Ajv from 'ajv';
 import { load, dump } from 'js-yaml';
@@ -48,6 +46,27 @@ function DtsViewEdit() {
   const [needsRefresh, setNeedsRefresh] = useState(false);
   const [errorDTSConf, setErrorDTSConf] = useState(false);
   const [errorName, setErrorName] = useState(false);
+
+  const configParameters: ConfigurationParameters = {
+    headers: {
+      Authorization: "Bearer " + auth.user?.access_token,
+    },
+    basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH,
+  };
+
+  function createDtsResourceApi(): DtsResourceApi {
+    return new DtsResourceApi(new Configuration(configParameters));
+  }
+
+  function createDtsCollectionResourceApi(): DtsCollectionResourceApi {  
+    const api = new DtsCollectionResourceApi(new Configuration(configParameters));
+    return api;
+  }
+
+  function createDtsTemplateResourceApi(): DtsTemplateResourceApi {
+    const api = new DtsTemplateResourceApi(new Configuration(configParameters));
+    return api;
+  }
 
   const handleChange = async (e: ChangeEvent<HTMLSelectElement>) => {
     setSelectedOption(e.target.value);
@@ -118,14 +137,7 @@ function DtsViewEdit() {
 
   const listTemplateNames = async () => {
     try {
-      const configParameters: ConfigurationParameters = {
-        headers: {
-          Authorization: "Bearer " + auth.user?.access_token,
-        },
-        basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH,
-      };
-      const config = new Configuration(configParameters);
-      const api = new DtsResourceApi(config);
+      const api = createDtsCollectionResourceApi();
       const dtscCollectionList = await api.dtscListPost();
       const dtscCollecion = dtscCollectionList[0];
 
@@ -149,15 +161,7 @@ function DtsViewEdit() {
   const idinurl = pathname.replace("/services/", "");
 
   function listDtsTemplateVOs() {
-    const configParameters: ConfigurationParameters = {
-      headers: {
-        'Authorization': 'Bearer ' + auth.user?.access_token ,
-      },
-      basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH,
-    };
-    const config = new Configuration(configParameters);
-    const apiDtst = new DtsTemplateResourceApi(config);
-    
+    const apiDtst = createDtsTemplateResourceApi()
     apiDtst.dtstListPost({}).then((resp) => setDtsTemplateVOs(prevState => [...prevState, ...resp]));
   }
 
@@ -169,16 +173,7 @@ function DtsViewEdit() {
       const newTemplate:DtsTemplateVO = {title: 'string', state: EntityState.Editing, yaml: 'string', name: "string", id: id, type: DtsType.ConversationalService}
       setDtsTemplateVOs([newTemplate]);
     } else {
-      const configParameters: ConfigurationParameters = {
-        headers: {
-          'Authorization': 'Bearer ' + auth.user?.access_token ,
-        },
-        basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH,
-      };
-      
-    
-      const config = new Configuration(configParameters);
-      const api = new DtsResourceApi(config);
+      const api = createDtsResourceApi()
       
       api.dtsGetIdGet({ id: idinurl}).then((resp) => {
         if (resp) {
@@ -223,16 +218,7 @@ useEffect(() => {
   }
 
   async function saveDtsVO() {
-    const configParameters: ConfigurationParameters = {
-      headers: {
-        'Authorization': 'Bearer ' + auth.user?.access_token ,
-      },
-      basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH,
-    };
-    
-  
-    const config = new Configuration(configParameters);
-    const api = new DtsResourceApi(config);
+    const api = createDtsResourceApi();
 
     if(false === isMatchNameServiceWithNameTemplate(selectedOption)){
       dtsVO.name = undefined !== dtsVO.title ? dtsVO.title : '';
@@ -254,14 +240,7 @@ useEffect(() => {
   async function saveDtsTemplateVO() {
     if(selectedOption !== 'current'){
       const templateVO = dtsTemplateVOs.find(t => t.id === dtsVO?.templateFk);
-      const configParameters: ConfigurationParameters = {
-        headers: {
-          'Authorization': 'Bearer ' + auth.user?.access_token ,
-        },
-        basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH,
-      };
-      const config = new Configuration(configParameters);
-      const api = new DtsTemplateResourceApi(config);
+      const api = createDtsTemplateResourceApi();
       
       templateVO && await api.dtstSavePost({ dtsTemplateVO: templateVO });
     }

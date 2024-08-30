@@ -13,70 +13,63 @@
  */
 
 import { mapValues } from '../runtime';
-import type { ParameterType } from './ParameterType';
-import {
-    ParameterTypeFromJSON,
-    ParameterTypeFromJSONTyped,
-    ParameterTypeToJSON,
-} from './ParameterType';
-
 /**
  * 
  * @export
- * @interface ParameterFilter
+ * @interface DtsCollectionFilter
  */
-export interface ParameterFilter {
+export interface DtsCollectionFilter {
     /**
      * 
      * @type {string}
-     * @memberof ParameterFilter
+     * @memberof DtsCollectionFilter
      */
     name?: string;
     /**
      * 
-     * @type {ParameterType}
-     * @memberof ParameterFilter
+     * @type {boolean}
+     * @memberof DtsCollectionFilter
      */
-    type?: ParameterType;
+    showDeleted?: boolean;
     /**
      * 
      * @type {string}
-     * @memberof ParameterFilter
+     * @memberof DtsCollectionFilter
      */
     searchAttribute?: string;
 }
 
 /**
- * Check if a given object implements the ParameterFilter interface.
+ * Check if a given object implements the DtsCollectionFilter interface.
  */
-export function instanceOfParameterFilter(value: object): boolean {
+export function instanceOfDtsCollectionFilter(value: object): boolean {
     return true;
 }
 
-export function ParameterFilterFromJSON(json: any): ParameterFilter {
-    return ParameterFilterFromJSONTyped(json, false);
+export function DtsCollectionFilterFromJSON(json: any): DtsCollectionFilter {
+    return DtsCollectionFilterFromJSONTyped(json, false);
 }
 
-export function ParameterFilterFromJSONTyped(json: any, ignoreDiscriminator: boolean): ParameterFilter {
+export function DtsCollectionFilterFromJSONTyped(json: any, ignoreDiscriminator: boolean): DtsCollectionFilter {
     if (json == null) {
         return json;
     }
     return {
         
         'name': json['name'] == null ? undefined : json['name'],
-        'type': json['type'] == null ? undefined : ParameterTypeFromJSON(json['type']),
+        'showDeleted': json['showDeleted'] == null ? undefined : json['showDeleted'],
         'searchAttribute': json['searchAttribute'] == null ? undefined : json['searchAttribute'],
     };
 }
 
-export function ParameterFilterToJSON(value?: ParameterFilter | null): any {
+export function DtsCollectionFilterToJSON(value?: DtsCollectionFilter | null): any {
     if (value == null) {
         return value;
     }
     return {
         
         'name': value['name'],
-        'type': ParameterTypeToJSON(value['type']),
+        'showDeleted': value['showDeleted'],
         'searchAttribute': value['searchAttribute'],
     };
 }

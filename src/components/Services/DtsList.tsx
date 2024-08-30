@@ -4,13 +4,15 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   DtsListPostRequest,
   DtsResourceApi,
+  DtsGetIdGetRequest
 } from "../../openapi-client/apis/DtsResourceApi";
 import {
+  DtsCollectionVO,
   DtsVO,
   EntityState,
 } from "../../openapi-client/models";
 import { DtsFilter } from "../../openapi-client/models";
-import { Configuration, ConfigurationParameters } from "../../openapi-client";
+import { Configuration, ConfigurationParameters, DtsCollectionResourceApi } from "../../openapi-client";
 import { useAuth } from "react-oidc-context";
 import { Log } from "oidc-client-ts";
 import Link from "next/link";
@@ -39,16 +41,30 @@ function DtsList() {
   const [sortKey, setSortKey] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
   const visiblePages = 4;
+  const [dtsCollectionVOs, setDtsCollectionVOs] = useState<DtsCollectionVO[]>()
 
   const filterByDts = (item: DtsVO) => item.name?.toLowerCase().includes(searchDts.toLowerCase());
   const filterByState = (item: DtsVO) => item.state?.toLowerCase().includes(filterState.toLowerCase());
+  const filterByCollectionFk = (item: DtsVO) => item.collectionFk == getCollectionFk();
 
-  const filteredItems = useMemo(() => {
-    return dtsVOs.filter(filterByDts).filter(filterByState);
-  }, [dtsVOs, filterByDts, filterByState]);
-  const sortedItems = useMemo(() => {
-    return sortItems(filteredItems, sortKey, sortOrder);
-  }, [filteredItems, sortKey, sortOrder]);
+  const getCollectionFk = (): string =>
+    dtsCollectionVOs?.find(
+      ({ template, templateRepo }: DtsCollectionVO) =>
+        template?.toLowerCase().includes(searchDts.toLowerCase()) ||
+        templateRepo?.toLowerCase().includes(searchDts.toLowerCase())
+    )?.id ?? '';
+
+  const filteredItems = useMemo(() => 
+    dtsVOs.filter(
+      item => (filterByDts(item) || filterByCollectionFk(item)) && filterByState(item)
+    ),
+    [dtsVOs, filterByDts, filterByCollectionFk, filterByState]
+  );
+
+  const sortedItems = useMemo(
+    () => sortItems(filteredItems, sortKey, sortOrder),
+    [filteredItems, sortKey, sortOrder]
+  );
 
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -68,16 +84,24 @@ function DtsList() {
   Log.setLogger(console);
   Log.setLevel(Log.DEBUG);
 
-  function listDtsVOs() {
-    const configParameters: ConfigurationParameters = {
-      headers: {
-        Authorization: "Bearer " + auth.user?.access_token,
-      },
-      basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH,
-    };
+  const configParameters: ConfigurationParameters = {
+    headers: {
+      Authorization: "Bearer " + auth.user?.access_token,
+    },
+    basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH,
+  };
 
-    const config = new Configuration(configParameters);
-    const api = new DtsResourceApi(config);
+  function createDtsResourceApi(): DtsResourceApi {
+    return new DtsResourceApi(new Configuration(configParameters));
+  }
+
+  function createDtsCollectionResourceApi(): DtsCollectionResourceApi {  
+    const api = new DtsCollectionResourceApi(new Configuration(configParameters));
+    return api;
+  }
+
+  function listDtsVOs() {
+    const api = createDtsResourceApi();
 
     class DtsFilterClass implements DtsFilter {
       state?: EntityState;
@@ -91,7 +115,11 @@ function DtsList() {
     const requestParameters = new DtsListPostRequestClass();
     requestParameters.dtsFilter = filterw;
 
-    api.dtsListPost(requestParameters).then((resp) => setDtsVOs(resp))
+    api.dtsListPost(requestParameters).then((resp) => {
+      getAllDtsCollectionVO(resp).finally(() =>  {
+        setDtsVOs(resp)
+      }) 
+    })
         .catch((error) => setDtsVOs([
           {description: "Description",state: EntityState.Editing,name: "Default name",debug: false, createdTs: new Date()},
           {description: "Description 2",state: EntityState.Enabled,name: "Default name 2",debug: false, createdTs: new Date()},
@@ -185,6 +213,34 @@ function DtsList() {
     );
   }
 
+  async function getAllDtsCollectionVO(dtsVOs: DtsVO[]): Promise<void> {
+    const api = createDtsCollectionResourceApi();
+  
+    const dtsCollectionPromise = dtsVOs.map(async (dts) => {
+      const collecFk: DtsGetIdGetRequest = { id: String(dts.collectionFk) };
+      try {
+        return api.dtscGetIdGet(collecFk);
+      } catch (error) {
+        return {};
+      }
+    });
+  
+    const dtsCollectionVO = await Promise.all(dtsCollectionPromise);
+  
+    if (!dtsCollectionVOs) {
+      setDtsCollectionVOs(dtsCollectionVO);
+    }
+  }
+  
+  function getDataTemplate(idCollection: string): DtsCollectionVO {
+    if(undefined !== dtsCollectionVOs){
+      return dtsCollectionVOs?.find(
+        (dtsCollectionVO: DtsCollectionVO) => idCollection === String(dtsCollectionVO.id)
+      ) ?? {};
+    }
+    return {}
+  }
+  
   if (auth.isAuthenticated) {
     return (
       <div className="xsm:overflow-x-auto 2xsm:overflow-x-auto sm:overflow-x-auto md:overflow-x-auto lg:overflow-x-auto xl:overflow-x-visible 2xl:overflow-x-visible 3xl:overflow-x-visible rounded-sm border border-stroke px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1" id="list-services">
@@ -284,12 +340,12 @@ function DtsList() {
 
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 text-center dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
-                      Template Repo
+                      {getDataTemplate(String(dts.collectionFk))?.templateRepo ?? 'no repo'}
                     </h5>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 text-center dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
-                      Template
+                    {getDataTemplate(String(dts.collectionFk))?.template ?? 'no template' }
                     </h5>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 text-center dark:border-strokedark xl:pl-11">

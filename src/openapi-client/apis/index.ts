@@ -2,6 +2,7 @@
 /* eslint-disable */
 export * from './CampaignResourceApi';
 export * from './CampaignScheduleResourceApi';
+export * from './DtsCollectionResourceApi';
 export * from './DtsResourceApi';
 export * from './DtsTemplateResourceApi';
 export * from './GenericEntityResourceApi';
