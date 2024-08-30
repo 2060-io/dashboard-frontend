@@ -211,25 +211,23 @@ function DtsList() {
       </button>
     );
   }
-  
+
   async function getAllDtsCollectionVO(dtsVOs: DtsVO[]): Promise<void> {
-    const dtsCollectionVO = await Promise.all(
-      dtsVOs.map((dts) => getDtsCollectionVO(String(dts.collectionFk)))
-    );
+    const api = createDtsCollectionResourceApi();
+  
+    const dtsCollectionPromise = dtsVOs.map(async (dts) => {
+      const collecFk: DtsGetIdGetRequest = { id: String(dts.collectionFk) };
+      try {
+        return await api.dtscGetIdGet(collecFk);
+      } catch (error) {
+        return {};
+      }
+    });
+  
+    const dtsCollectionVO = await Promise.all(dtsCollectionPromise);
   
     if (!dtsCollectionVOs) {
       setDtsCollectionVOs(dtsCollectionVO);
-    }
-  }
-
-  async function getDtsCollectionVO(collectionFk: string): Promise<DtsCollectionVO> {
-    const api = createDtsCollectionResourceApi();
-    const collecFk: DtsGetIdGetRequest = { id: collectionFk };
-  
-    try {
-      return await api.dtscGetIdGet(collecFk);
-    } catch (error) {
-      return {};
     }
   }
   
