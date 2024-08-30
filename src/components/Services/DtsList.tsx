@@ -116,8 +116,9 @@ function DtsList() {
     requestParameters.dtsFilter = filterw;
 
     api.dtsListPost(requestParameters).then((resp) => {
-      getAllDtsCollectionVO(resp)
-      setDtsVOs(resp)
+      getAllDtsCollectionVO(resp).finally(() =>  {
+        setDtsVOs(resp)
+      }) 
     })
         .catch((error) => setDtsVOs([
           {description: "Description",state: EntityState.Editing,name: "Default name",debug: false, createdTs: new Date()},
@@ -239,12 +240,8 @@ function DtsList() {
     }
     return {}
   }
-
   
   if (auth.isAuthenticated) {
-    if(undefined  === dtsCollectionVOs){
-      return
-    }
     return (
       <div className="xsm:overflow-x-auto 2xsm:overflow-x-auto sm:overflow-x-auto md:overflow-x-auto lg:overflow-x-auto xl:overflow-x-visible 2xl:overflow-x-visible 3xl:overflow-x-visible rounded-sm border border-stroke px-5 pb-2.5 pt-6 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1" id="list-services">
         <div className="flex justify-between items-center mb-6">
