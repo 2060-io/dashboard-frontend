@@ -116,7 +116,7 @@ function DtsList() {
     requestParameters.dtsFilter = filterw;
 
     api.dtsListPost(requestParameters).then((resp) => {
-      getTemplatesInfoData(resp)
+      getAllDtsCollectionVO(resp)
       setDtsVOs(resp)
     })
         .catch((error) => setDtsVOs([
@@ -211,41 +211,33 @@ function DtsList() {
       </button>
     );
   }
-
-  async function getDtscCollection(collectionFk: string): Promise<DtsCollectionVO> {
-    const api = createDtsCollectionResourceApi()
-    const collecFk: DtsGetIdGetRequest = { id: collectionFk };
-    return api.dtscGetIdGet(collecFk);
-  }
-
-  async function getDtsCollectionVO(collectionFk: string): Promise<DtsCollectionVO> {
-    try {
-      return await getDtscCollection(collectionFk);
-    } catch (error) {
-      return {}
-    }
-  }
-
-  async function getTemplatesInfoData(dtsVOs: DtsVO[]): Promise<void> {
-    const templatePromises = dtsVOs.map((dts) =>
-      getDtsCollectionVO(String(dts.collectionFk))
+  
+  async function getAllDtsCollectionVO(dtsVOs: DtsVO[]): Promise<void> {
+    const dtsCollectionVO = await Promise.all(
+      dtsVOs.map((dts) => getDtsCollectionVO(String(dts.collectionFk)))
     );
-
-    const dtsCollectionVO = await Promise.all(templatePromises);
-
+  
     if (!DtsCollectionVOs) {
       setDtsCollectionVOs(dtsCollectionVO);
     }
   }
 
-  function getDtsCollection(idCollection: string): DtsCollectionVO {
-    return (
-      DtsCollectionVOs?.find(
-        (dtsCollectionVO) => idCollection === String(dtsCollectionVO.id)
-      ) ?? {}
-    );
+  async function getDtsCollectionVO(collectionFk: string): Promise<DtsCollectionVO> {
+    const api = createDtsCollectionResourceApi();
+    const collecFk: DtsGetIdGetRequest = { id: collectionFk };
+  
+    try {
+      return await api.dtscGetIdGet(collecFk);
+    } catch (error) {
+      return {};
+    }
   }
-
+  
+  function getDataTemplate(idCollection: string): DtsCollectionVO {
+    return DtsCollectionVOs?.find(
+      (dtsCollectionVO) => idCollection === String(dtsCollectionVO.id)
+    ) ?? {};
+  }
 
   if (auth.isAuthenticated) {
     return (
@@ -346,12 +338,12 @@ function DtsList() {
 
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 text-center dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
-                      {getDtsCollection(String(dts.collectionFk))?.templateRepo ?? 'no repo'}
+                      {getDataTemplate(String(dts.collectionFk))?.templateRepo ?? 'no repo'}
                     </h5>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 text-center dark:border-strokedark xl:pl-11">
                     <h5 className="font-medium text-black dark:text-white">
-                    {getDtsCollection(String(dts.collectionFk))?.template ?? 'no template' }
+                    {getDataTemplate(String(dts.collectionFk))?.template ?? 'no template' }
                     </h5>
                   </td>
                   <td className="border-b border-[#eee] px-4 py-5 pl-9 text-center dark:border-strokedark xl:pl-11">
