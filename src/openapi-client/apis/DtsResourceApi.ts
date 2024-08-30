@@ -22,13 +22,10 @@ import type {
 import {
     DtsFilterFromJSON,
     DtsFilterToJSON,
-    DtscCollectionVO,
-    DtscCollectionVOToJSON,
     DtsVOFromJSON,
     DtsVOToJSON,
     ErrorResponseFromJSON,
     ErrorResponseToJSON,
-    DtscCollectionVOFromJSON,
 } from '../models/index';
 
 export interface DtsCloneIdCloneIdPutRequest {
@@ -50,10 +47,6 @@ export interface DtsListPostRequest {
 
 export interface DtsSavePostRequest {
     dtsVO?: DtsVO;
-}
-
-export interface DtscGetIdGetRequest {
-    id: string
 }
 
 /**
@@ -230,70 +223,6 @@ export class DtsResourceApi extends runtime.BaseAPI {
      */
     async dtsSavePost(requestParameters: DtsSavePostRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<void> {
         await this.dtsSavePostRaw(requestParameters, initOverrides);
-    }
-
-    /**
-     * List Dts Collections
-     * List Dts Collections
-     */
-    async dtscListPostRaw(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<Array<DtscCollectionVO>>> {
-        const queryParameters: any = {};
-
-        const headerParameters: runtime.HTTPHeaders = {}
-
-        headerParameters['Content-Type'] = 'application/json';
-
-        const response = await this.request({
-            path: '/dtsc/list',
-            method: 'POST',
-            headers: headerParameters,
-            query: queryParameters,
-            body: DtscCollectionVOToJSON
-        });
-
-        return new runtime.JSONApiResponse(response)
-    }
-
-    /**
-     * List Dts Collections
-     * List Dts Collections
-     */
-    async dtscListPost(initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<Array<DtscCollectionVO>>{
-        const response = await this.dtscListPostRaw(initOverrides);
-        return await response.value();
-    }
-
-    /**
-     * Get a Dts Collection
-     * Get a Dts Collection
-     */
-    async dtscGetIdGetRaw(requestParameters: DtscGetIdGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<DtscCollectionVO>>{
-        if(null == requestParameters['id']){
-            throw new runtime.RequiredError(
-                'id',
-                'Required parameter "id" was null or undefined when calling dtsGetIdGet().'
-            );
-        }
-
-        const queryParameters: any = {};
-        const headerParameters: runtime.HTTPHeaders = {};
-        const response = await this.request({
-            path: `/dtsc/get/{id}`.replace(`{${"id"}}`, encodeURIComponent(String(requestParameters['id']))),
-            method: 'GET',
-            headers: headerParameters,
-            query: queryParameters
-        }, initOverrides);
-
-        return new runtime.JSONApiResponse(response, (jsonValue) => DtscCollectionVOFromJSON(jsonValue))
-    }
-
-    /**
-     * Get a Dts Collection
-     * Get a Dts Collection
-     */
-    async dtscGetIdGet(requestParameters: DtscGetIdGetRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<DtscCollectionVO>{
-        const respose = await this.dtscGetIdGetRaw(requestParameters, initOverrides);
-        return await respose.value();
     }
 
 }

@@ -2,9 +2,9 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  DtscGetIdGetRequest,
   DtsListPostRequest,
   DtsResourceApi,
+  DtsGetIdGetRequest
 } from "../../openapi-client/apis/DtsResourceApi";
 import {
   DtscCollectionVO,
@@ -242,7 +242,7 @@ function DtsList() {
 
   async function getDtscCollection(collectionFk: string): Promise<DtscCollectionVO> {
     const api = createDtsResourceApi();
-    const collecFk: DtscGetIdGetRequest = { id: collectionFk };
+    const collecFk: DtsGetIdGetRequest = { id: collectionFk };
     return api.dtscGetIdGet(collecFk);
   }
 
@@ -266,6 +266,7 @@ function DtsList() {
     );
 
     const templDatasInfo = await Promise.all(templatePromises);
+    console.log()
 
     if (!templatesDatasInfo) {
       setTemplatesDatasInfo(templDatasInfo);
