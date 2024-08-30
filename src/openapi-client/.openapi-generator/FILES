@@ -1,6 +1,7 @@
 .openapi-generator-ignore
 apis/CampaignResourceApi.ts
 apis/CampaignScheduleResourceApi.ts
+apis/DtsCollectionResourceApi.ts
 apis/DtsResourceApi.ts
 apis/DtsTemplateResourceApi.ts
 apis/GenericEntityResourceApi.ts
@@ -21,6 +22,8 @@ models/CampaignScheduleVO.ts
 models/CampaignType.ts
 models/CampaignTypeFilter.ts
 models/CampaignVO.ts
+models/DtsCollectionFilter.ts
+models/DtsCollectionVO.ts
 models/DtsFilter.ts
 models/DtsTemplateFilter.ts
 models/DtsTemplateVO.ts
