@@ -1,14 +1,11 @@
 "use client";
 
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import { DtsListPostRequest, DtsResourceApi } from '../../openapi-client/apis/DtsResourceApi'; 
-import { DtsFilterFromJSON, DtsTemplateVO, DtsVO, EntityState, DtsType } from '../../openapi-client/models';
-import {  } from "../../openapi-client/models";
-import { DtsFilter } from '../../openapi-client/models';
-import { Configuration, ConfigurationParameters, DtsCollectionResourceApi, DtsTemplateResourceApi } from '../../openapi-client';
+import { DtsResourceApi } from './index'; 
+import { DtsTemplateVO, DtsVO, EntityState, DtsType } from './index';
+import { Configuration, ConfigurationParameters, DtsCollectionResourceApi, DtsTemplateResourceApi } from './index';
 import { useAuth } from "react-oidc-context";
 import { usePathname, useRouter } from 'next/navigation';
-import SelectDtsTemplate from '../Templates/SelectDtsTemplate';
 import {v4 as uuidv4} from 'uuid';
 import Ajv from 'ajv';
 import { load, dump } from 'js-yaml';
