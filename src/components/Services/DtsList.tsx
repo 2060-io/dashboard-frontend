@@ -41,14 +41,14 @@ function DtsList() {
   const [sortKey, setSortKey] = useState('name');
   const [sortOrder, setSortOrder] = useState('asc');
   const visiblePages = 4;
-  const [DtsCollectionVOs, setDtsCollectionVOs] = useState<DtsCollectionVO[]>()
+  const [dtsCollectionVOs, setDtsCollectionVOs] = useState<DtsCollectionVO[]>()
 
   const filterByDts = (item: DtsVO) => item.name?.toLowerCase().includes(searchDts.toLowerCase());
   const filterByState = (item: DtsVO) => item.state?.toLowerCase().includes(filterState.toLowerCase());
   const filterByCollectionFk = (item: DtsVO) => item.collectionFk == getCollectionFk();
 
   const getCollectionFk = (): string =>
-    DtsCollectionVOs?.find(
+    dtsCollectionVOs?.find(
       ({ template, templateRepo }: DtsCollectionVO) =>
         template?.toLowerCase().includes(searchDts.toLowerCase()) ||
         templateRepo?.toLowerCase().includes(searchDts.toLowerCase())
@@ -217,7 +217,7 @@ function DtsList() {
       dtsVOs.map((dts) => getDtsCollectionVO(String(dts.collectionFk)))
     );
   
-    if (!DtsCollectionVOs) {
+    if (!dtsCollectionVOs) {
       setDtsCollectionVOs(dtsCollectionVO);
     }
   }
@@ -234,7 +234,7 @@ function DtsList() {
   }
   
   function getDataTemplate(idCollection: string): DtsCollectionVO {
-    return DtsCollectionVOs?.find(
+    return dtsCollectionVOs?.find(
       (dtsCollectionVO) => idCollection === String(dtsCollectionVO.id)
     ) ?? {};
   }
