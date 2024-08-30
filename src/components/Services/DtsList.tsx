@@ -104,15 +104,22 @@ function DtsList() {
 
   const auth = useAuth();
 
+  const noTemplateData: TemplateDataInfo = {
+    idService: 'no service',
+    idCollection: 'uuid',
+    templateRepo: "no repository",
+    template: "no template",
+  };
+
   Log.setLogger(console);
   Log.setLevel(Log.DEBUG);
 
   function createDtsResourceApi(): DtsResourceApi {
     const configParameters: ConfigurationParameters = {
       headers: {
-        Authorization: "Bearer " + auth.user?.access_token, // Se asume que auth está disponible en el scope global o de módulo.
+        Authorization: "Bearer " + auth.user?.access_token,
       },
-      basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH, // Se utiliza la variable de entorno directamente.
+      basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH,
     };
   
     const config = new Configuration(configParameters);
@@ -249,12 +256,7 @@ function DtsList() {
         template: response.template,
       };
     } catch (error) {
-      return {
-        idService: 'undefined',
-        idCollection: 'undefined',
-        templateRepo: "no repository",
-        template: "no template",
-      };
+      return noTemplateData
     }
   }
 
@@ -274,7 +276,7 @@ function DtsList() {
     return (
       templatesDatasInfo?.find(
         (templateDataInfo) => idService === String(templateDataInfo.idService)
-      ) ?? { idService: 'undefined', idCollection: 'undefined', templateRepo: 'no repository', template: 'no template' }
+      ) ?? noTemplateData
     );
   }
 
