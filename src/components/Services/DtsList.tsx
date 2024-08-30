@@ -7,12 +7,12 @@ import {
   DtsGetIdGetRequest
 } from "../../openapi-client/apis/DtsResourceApi";
 import {
-  DtscCollectionVO,
+  DtsCollectionVO,
   DtsVO,
   EntityState,
 } from "../../openapi-client/models";
 import { DtsFilter } from "../../openapi-client/models";
-import { Configuration, ConfigurationParameters } from "../../openapi-client";
+import { Configuration, ConfigurationParameters, DtsCollectionResourceApi } from "../../openapi-client";
 import { useAuth } from "react-oidc-context";
 import { Log } from "oidc-client-ts";
 import Link from "next/link";
@@ -114,17 +114,19 @@ function DtsList() {
   Log.setLogger(console);
   Log.setLevel(Log.DEBUG);
 
+  const configParameters: ConfigurationParameters = {
+    headers: {
+      Authorization: "Bearer " + auth.user?.access_token,
+    },
+    basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH,
+  };
+
   function createDtsResourceApi(): DtsResourceApi {
-    const configParameters: ConfigurationParameters = {
-      headers: {
-        Authorization: "Bearer " + auth.user?.access_token,
-      },
-      basePath: process.env.NEXT_PUBLIC_BACKEND_BASE_PATH,
-    };
-  
-    const config = new Configuration(configParameters);
-    const api = new DtsResourceApi(config);
-  
+    return new DtsResourceApi(new Configuration(configParameters));
+  }
+
+  function createDtsCollectionResourceApi(): DtsCollectionResourceApi {  
+    const api = new DtsCollectionResourceApi(new Configuration(configParameters));
     return api;
   }
 
@@ -240,8 +242,8 @@ function DtsList() {
     );
   }
 
-  async function getDtscCollection(collectionFk: string): Promise<DtscCollectionVO> {
-    const api = createDtsResourceApi();
+  async function getDtscCollection(collectionFk: string): Promise<DtsCollectionVO> {
+    const api = createDtsCollectionResourceApi()
     const collecFk: DtsGetIdGetRequest = { id: collectionFk };
     return api.dtscGetIdGet(collecFk);
   }
