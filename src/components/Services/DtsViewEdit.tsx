@@ -49,7 +49,7 @@ function DtsViewEdit() {
   const [errorDTSConf, setErrorDTSConf] = useState(false);
   const [errorName, setErrorName] = useState(false);
   const [dtsCollections, setDtsCollections] = useState<DtsCollectionVO[]>([]);
-  const [selectedOptionColletion, setSelectedOptionCollection] = useState<string>('');
+  const [selectedOptionCollection, setSelectedOptionCollection] = useState<string>('');
 
   const configParameters: ConfigurationParameters = {
     headers: {
@@ -85,7 +85,9 @@ function DtsViewEdit() {
   };
 
   const handleChangeCollection = (e: ChangeEvent<HTMLSelectElement>) => {
-    setSelectedOptionCollection(e.target.value)
+    const idCollection: string = e.target.value;
+    setSelectedOptionCollection(idCollection)
+    listTemplateNames(idCollection)
   }
 
   const readGithubValue = async (name:String) => {
@@ -153,23 +155,25 @@ function DtsViewEdit() {
     }
   }
 
-  const listTemplateNames = async () => {
+  const listTemplateNames = async (idCollection: string) => {
     try {
-      const api = createDtsCollectionResourceApi();
-      const dtscCollectionList = await api.dtscListPost();
-      const dtscCollecion = dtscCollectionList[0];
+      const dtsCollection: DtsCollectionVO = dtsCollections.find((dtsCollection: DtsCollectionVO) => (dtsCollection.id === idCollection)) ?? {}
 
-        const response = await fetch(`https://api.github.com/repos/${dtscCollecion.template+'/'+dtscCollecion.templateRepo}/contents`);
-        const data: ApiGitHub[] = await response.json();
-        const folders = data.filter((item:ApiGitHub) => item.type === 'dir' && !item.name.startsWith('.'));
-        
-        let templates: TemplateInfo[] = folders.map(folder => ({
-            name: folder.name,
-            value: folder.name,
-            schema: folder.name === "Fastbot" ? process.env.NEXT_PUBLIC_TEMPLATE_DIR : null
-        }));
+      if(0 === Object.entries(dtsCollection).length){
+        return;
+      }
 
-        templates = [...templates];     
+      const response = await fetch(`https://api.github.com/repos/${dtsCollection.template+'/'+dtsCollection.templateRepo}/contents`);
+      const data: ApiGitHub[] = await response.json();
+      const folders = data.filter((item:ApiGitHub) => item.type === 'dir' && !item.name.startsWith('.'));
+      
+      let templates: TemplateInfo[] = folders.map(folder => ({
+          name: folder.name,
+          value: folder.name,
+          schema: folder.name === "Fastbot" ? process.env.NEXT_PUBLIC_TEMPLATE_DIR : null
+      }));
+
+      templates = [...templates];     
       setTemplateNames(templates);
     } catch (error) {
         console.error('Error fetching templates:', error);
@@ -210,7 +214,7 @@ function DtsViewEdit() {
       getDtsVO();
       listDtsTemplateVOs();
       listDtsCollection();
-      listTemplateNames();
+      //listTemplateNames();
     }
 }, [auth, needsRefresh]);
 
@@ -342,7 +346,7 @@ useEffect(() => {
                 <DtsCollectionSelect 
                   idinurl={idinurl}
                   dtsCollections={dtsCollections}
-                  selectedOptionCollection={selectedOptionColletion}
+                  selectedOptionCollection={selectedOptionCollection}
                   handleChangeCollection={handleChangeCollection}
 
                 />
@@ -355,6 +359,7 @@ useEffect(() => {
                   refreshDtsTemplateFields={refreshDtsTemplateFields}
                   templateNames={templateNames}
                   isOptionSelected={isOptionSelected}
+                  selectedOptionCollection={selectedOptionCollection}
                 />
     </div>
 

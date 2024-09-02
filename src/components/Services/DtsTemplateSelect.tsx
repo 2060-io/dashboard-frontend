@@ -8,6 +8,7 @@ export interface DtsTemplateSelect {
 	refreshDtsTemplateFields: () => Promise<void>
 	templateNames: TemplateInfo[]
 	isOptionSelected: boolean
+	selectedOptionCollection: string
 }
 
 const DtsTemplateSelect: React.FC<DtsTemplateSelect> = ({
@@ -17,8 +18,9 @@ const DtsTemplateSelect: React.FC<DtsTemplateSelect> = ({
 	refreshDtsTemplateFields,
 	templateNames,
 	isOptionSelected,
+	selectedOptionCollection
 }) => {
-	const isDisabled = idinurl !== 'new';
+	const isDisabled = idinurl !== 'new' || '' === selectedOptionCollection;
 	const selectClassNames = `
     relative z-20 w-full appearance-none
     rounded border border-stroke bg-transparent px-5 py-3 outline-none transition
@@ -35,8 +37,13 @@ const DtsTemplateSelect: React.FC<DtsTemplateSelect> = ({
 			<div className="relative z-20 bg-transparent dark:bg-form-input">
 				<select
 					value={selectedOption}
-					onChange={() => { handleChange }}
+					onChange={
+						(e: ChangeEvent<HTMLSelectElement>) => { 
+							handleChange(e)
+						}
+					}
 					onBlur={() => { refreshDtsTemplateFields }}
+					// disabled={isDisabled}
 					disabled={isDisabled}
 					className={selectClassNames}
 				>
