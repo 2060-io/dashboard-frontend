@@ -1,7 +1,7 @@
 "use client";
 
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import { DtsResourceApi } from './index'; 
+import { DtsCollectionVO, DtsResourceApi } from './index'; 
 import { DtsTemplateVO, DtsVO, EntityState, DtsType } from './index';
 import { Configuration, ConfigurationParameters, DtsCollectionResourceApi, DtsTemplateResourceApi } from './index';
 import { useAuth } from "react-oidc-context";
@@ -48,6 +48,8 @@ function DtsViewEdit() {
   const [needsRefresh, setNeedsRefresh] = useState(false);
   const [errorDTSConf, setErrorDTSConf] = useState(false);
   const [errorName, setErrorName] = useState(false);
+  const [dtsCollections, setDtsCollections] = useState<DtsCollectionVO[]>([]);
+  const [selectedOptionColletion, setSelectedOptionCollection] = useState<string>('');
 
   const configParameters: ConfigurationParameters = {
     headers: {
@@ -81,6 +83,10 @@ function DtsViewEdit() {
       return item;
     }));
   };
+
+  const handleChangeCollection = (e: ChangeEvent<HTMLSelectElement>) => {
+    setSelectedOptionCollection(e.target.value)
+  }
 
   const readGithubValue = async (name:String) => {
     try {
@@ -134,6 +140,16 @@ function DtsViewEdit() {
       }
     } catch (error) {
       console.error("checkConfigStructure: Error: " ,error)
+    }
+  }
+
+  const listDtsCollection = async () => {
+    try {
+      const api = createDtsCollectionResourceApi();
+      const dtscCollectionList = await api.dtscListPost();
+      setDtsCollections(dtscCollectionList);
+    } catch (error) {
+      console.error('Error fetching collecionts:', error)
     }
   }
 
@@ -193,6 +209,7 @@ function DtsViewEdit() {
     if (auth.isAuthenticated) {
       getDtsVO();
       listDtsTemplateVOs();
+      listDtsCollection();
       listTemplateNames();
     }
 }, [auth, needsRefresh]);
@@ -324,6 +341,10 @@ useEffect(() => {
               <div className="mb-4.5">
                 <DtsCollectionSelect 
                   idinurl={idinurl}
+                  dtsCollections={dtsCollections}
+                  selectedOptionCollection={selectedOptionColletion}
+                  handleChangeCollection={handleChangeCollection}
+
                 />
               </div>
               <div className="mb-4.5">

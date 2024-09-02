@@ -1,10 +1,19 @@
-import React from 'react';
+import { DtsCollectionVO } from '@/openapi-client';
+import React, { ChangeEvent } from 'react';
 
 export interface DtsCollectionSelect {
 	idinurl: string
+	dtsCollections: DtsCollectionVO[]
+	selectedOptionCollection: string
+	handleChangeCollection: (e: ChangeEvent<HTMLSelectElement>) => void
 }
 
-export const DtsCollectionSelect: React.FC<DtsCollectionSelect> = ({ idinurl }) => {
+export const DtsCollectionSelect: React.FC<DtsCollectionSelect> = ({
+	idinurl,
+	dtsCollections,
+	selectedOptionCollection,
+	handleChangeCollection
+}) => {
 	const isDisabled = idinurl !== 'new';
 	const selectClassNames = `
     relative z-20 w-full appearance-none
@@ -27,10 +36,14 @@ export const DtsCollectionSelect: React.FC<DtsCollectionSelect> = ({ idinurl }) 
 			</label>
 			<div className="relative z-20 bg-transparent dark:bg-form-input">
 				<select
-					value=""
+					value={selectedOptionCollection}
+					onChange={
+						(e: ChangeEvent<HTMLSelectElement>) => {
+							handleChangeCollection(e)
+						}
+					}
 					disabled={isDisabled}
 					className={selectClassNames}
-					onChange={() => { }}
 				>
 					<option
 						value=""
@@ -39,8 +52,11 @@ export const DtsCollectionSelect: React.FC<DtsCollectionSelect> = ({ idinurl }) 
 					>
 						Select your collection
 					</option>
-					<option>1</option>
-					<option>2</option>
+					{(dtsCollections).map((collecion: DtsCollectionVO, index: number) => (
+						<option key={index} value={collecion.id} className="text-body dark:text-bodydark">
+							{collecion.name}
+						</option>
+					))}
 				</select>
 				<span className="absolute right-4 top-1/2 z-30 -translate-y-1/2">
 					<svg
