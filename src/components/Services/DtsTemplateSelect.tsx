@@ -5,6 +5,7 @@ export interface DtsTemplateSelect {
 	idinurl: string
 	selectedOption: string
 	handleChange: (e: ChangeEvent<HTMLSelectElement>) => Promise<void>
+	getValuesNewTemplate: (e: ChangeEvent<HTMLSelectElement>) => Promise<void>
 	refreshDtsTemplateFields: () => Promise<void>
 	templateNames: TemplateInfo[]
 	isOptionSelected: boolean
@@ -15,6 +16,7 @@ const DtsTemplateSelect: React.FC<DtsTemplateSelect> = ({
 	idinurl,
 	selectedOption,
 	handleChange,
+	getValuesNewTemplate,
 	refreshDtsTemplateFields,
 	templateNames,
 	isOptionSelected,
@@ -38,12 +40,11 @@ const DtsTemplateSelect: React.FC<DtsTemplateSelect> = ({
 				<select
 					value={selectedOption}
 					onChange={
-						(e: ChangeEvent<HTMLSelectElement>) => { 
-							handleChange(e)
+						(e: ChangeEvent<HTMLSelectElement>) => {
+							'new' === idinurl ? getValuesNewTemplate(e) : handleChange(e);
 						}
 					}
 					onBlur={() => { refreshDtsTemplateFields }}
-					// disabled={isDisabled}
 					disabled={isDisabled}
 					className={selectClassNames}
 				>

@@ -187,6 +187,18 @@ function DtsViewEdit() {
     apiDtst.dtstListPost({}).then((resp) => setDtsTemplateVOs(prevState => [...prevState, ...resp]));
   }
 
+  const getValuesNewTemplate = async ({ target: { value } }: ChangeEvent<HTMLSelectElement>) => {
+    try {
+      setSelectedOption(value);
+      const template = templateNames.find(template => value === template.name);
+      const dtsCollection = dtsCollections.find(dts => dts.id === selectedOptionCollection) ?? {};
+      const templatePath = `${dtsCollection.template}/${dtsCollection.templateRepo}/${process.env.NEXT_PUBLIC_TEMPLATE_BRANCH}/${template?.name}/values.yaml`;
+      const values = await readGithubValue(templatePath);
+      setDtsVO(prevDtsVO => ({ ...prevDtsVO, deploymentConfig: values }));
+    } catch (error) {
+      console.error('Error get values template:', error);
+    }
+  };
 
   function getDtsVO() {
     if ((idinurl === null) || (idinurl === "new")) {
@@ -356,6 +368,7 @@ useEffect(() => {
                   idinurl={idinurl}
                   selectedOption={selectedOption}
                   handleChange={handleChange}
+                  getValuesNewTemplate={getValuesNewTemplate}
                   refreshDtsTemplateFields={refreshDtsTemplateFields}
                   templateNames={templateNames}
                   isOptionSelected={isOptionSelected}
