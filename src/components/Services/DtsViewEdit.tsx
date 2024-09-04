@@ -86,8 +86,8 @@ function DtsViewEdit() {
 
   const handleChangeCollection = (e: ChangeEvent<HTMLSelectElement>) => {
     const idCollection: string = e.target.value;
-    setSelectedOptionCollection(idCollection)
-    listTemplateNames(idCollection)
+    setSelectedOptionCollection(idCollection);
+    listTemplateNames(idCollection);
   }
 
   const readGithubValue = async (name:String) => {
@@ -120,28 +120,51 @@ function DtsViewEdit() {
     }
   }
   
-  const checkConfigStructure = async (e: ChangeEvent<HTMLTextAreaElement>) =>{
-    setDtsVO({...dtsVO, config: e.target.value});
+  const validateSchemaDtsConfig = async (dtsConfiguration: string, templateSelected: string) => {
     try {
-      const file: SchemaConfig = JSON.parse(await readGithubValue(`${process.env.NEXT_PUBLIC_TEMPLATE_DIR}/${process.env.NEXT_PUBLIC_TEMPLATE_BRANCH}/${process.env.NEXT_PUBLIC_TEMPLATE_SCHEMA_DIR}`)) as SchemaConfig;
-  
+      const template = getTemplateInfo(templateSelected)
+      
+      const file: SchemaConfig = JSON.parse(await readGithubValue(`${template?.schema}/${process.env.NEXT_PUBLIC_TEMPLATE_BRANCH}/${template?.name}/Setup/schema_dir.json`)) as SchemaConfig;
       if(file && file.config && typeof file.config === 'object'){
         const ajv = new Ajv();
         const schemaDefault = await readGithubValue(`${file.config.path}/${file.config.branch}/schema.json`);
         const validate = ajv.compile(JSON.parse(schemaDefault ?? ''));
-        const jsonData = load(e.target.value);
-    
+        const jsonData = load(dtsConfiguration);
+
         const valid = validate(jsonData);
-        if (valid && 'fastbot' === selectedOption.toLowerCase()) {
+        if (valid && 'fastbot' === templateSelected.toLowerCase()) {
           setErrorDTSConf(false)
-          setDtsVO({...dtsVO, config: e.target.value})
         } else {
           setErrorDTSConf(true)
           console.log('Errores de validación:', validate.errors);
         }
       }
     } catch (error) {
+      setErrorDTSConf(true)
       console.error("checkConfigStructure: Error: " ,error)
+    }
+  }
+
+  const getDtsCollection = (idCollection: string): DtsCollectionVO  => 
+     dtsCollections.find(
+      (dtsCollection: DtsCollectionVO) => (dtsCollection.id === idCollection)
+    ) ?? {}
+
+  const getTemplateInfo = (name: string): TemplateInfo =>
+    templateNames.find(template => template.name === name) ?? {
+      name: 'no name',
+      value: 'no value', 
+      schema: 'no schema'
+    };
+
+  const checkConfigStructure = async (e: ChangeEvent<HTMLTextAreaElement>) =>{
+    const dtsConfiguration = String(e.target.value);
+    setDtsVO({...dtsVO, config: dtsConfiguration});
+    try {
+      validateSchemaDtsConfig(dtsConfiguration, selectedOption);
+      setDtsVO({...dtsVO, config: dtsConfiguration});
+    } catch (error) {
+      console.error("checkConfigStructure: Error: " ,error);
     }
   }
 
@@ -157,7 +180,7 @@ function DtsViewEdit() {
 
   const listTemplateNames = async (idCollection: string) => {
     try {
-      const dtsCollection: DtsCollectionVO = dtsCollections.find((dtsCollection: DtsCollectionVO) => (dtsCollection.id === idCollection)) ?? {}
+      const dtsCollection: DtsCollectionVO = getDtsCollection(idCollection);
 
       if(0 === Object.entries(dtsCollection).length){
         return;
@@ -170,7 +193,7 @@ function DtsViewEdit() {
       let templates: TemplateInfo[] = folders.map(folder => ({
           name: folder.name,
           value: folder.name,
-          schema: folder.name === "Fastbot" ? process.env.NEXT_PUBLIC_TEMPLATE_DIR : null
+          schema: folder.name === "Fastbot" ? `${dtsCollection.template}/${dtsCollection.templateRepo}` : null
       }));
 
       templates = [...templates];     
@@ -187,16 +210,27 @@ function DtsViewEdit() {
     apiDtst.dtstListPost({}).then((resp) => setDtsTemplateVOs(prevState => [...prevState, ...resp]));
   }
 
-  const getValuesNewTemplate = async ({ target: { value } }: ChangeEvent<HTMLSelectElement>) => {
+  const getValuesNewTemplate = async (value: string): Promise<void> => {
     try {
       setSelectedOption(value);
-      const template = templateNames.find(template => value === template.name);
-      const dtsCollection = dtsCollections.find(dts => dts.id === selectedOptionCollection) ?? {};
-      const templatePath = `${dtsCollection.template}/${dtsCollection.templateRepo}/${process.env.NEXT_PUBLIC_TEMPLATE_BRANCH}/${template?.name}/values.yaml`;
-      const values = await readGithubValue(templatePath);
-      setDtsVO(prevDtsVO => ({ ...prevDtsVO, deploymentConfig: values }));
+      let config = '';
+      let deploymentConfig = '';
+      const template = getTemplateInfo(value);
+      const dtsCollection = getDtsCollection(selectedOptionCollection);
+  
+      const createTemplatePath = (subPath = '') =>
+        `${dtsCollection.template}/${dtsCollection.templateRepo}/${process.env.NEXT_PUBLIC_TEMPLATE_BRANCH}/${template?.name}${subPath}`;
+  
+      deploymentConfig = await readGithubValue(createTemplatePath('/values.yaml'));
+  
+      if (value.toLowerCase() === 'fastbot') {
+        config = await readGithubValue(createTemplatePath('/Setup/config.yml'));
+        validateSchemaDtsConfig(config, value);
+      }
+
+      setDtsVO(prevDtsVO => ({ ...prevDtsVO, deploymentConfig: deploymentConfig, config: config, collectionFk: dtsCollection.id}));
     } catch (error) {
-      console.error('Error get values template:', error);
+      console.error('Error getting template values:', error);
     }
   };
 
@@ -226,13 +260,17 @@ function DtsViewEdit() {
       getDtsVO();
       listDtsTemplateVOs();
       listDtsCollection();
-      //listTemplateNames();
     }
 }, [auth, needsRefresh]);
 
 useEffect(() => {
   if('' == selectedOption || 'newTemplateFk' == selectedOption){
     setSelectedOption(getNameTemplateCurrent())
+  }
+  else{
+    if(idinurl === "new"){
+      getValuesNewTemplate(selectedOption)
+    }
   }
 });
 
@@ -256,6 +294,7 @@ useEffect(() => {
     const api = createDtsResourceApi();
 
     if(false === isMatchNameServiceWithNameTemplate(selectedOption)){
+      console.error('Error in service name: ', 'The service name must be consistent with the selected template');
       dtsVO.name = undefined !== dtsVO.title ? dtsVO.title : '';
       getDtsVO();
       return;
