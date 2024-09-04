@@ -266,12 +266,14 @@ function DtsViewEdit() {
 useEffect(() => {
   if('' == selectedOption || 'newTemplateFk' == selectedOption){
     setSelectedOption(getNameTemplateCurrent())
+    dtsVO.collectionFk && listTemplateNames(dtsVO.collectionFk)
   }
   else{
     if(idinurl === "new"){
       getValuesNewTemplate(selectedOption)
     }
   }
+  dtsVO.collectionFk && setSelectedOptionCollection(dtsVO.collectionFk)
 });
 
   function getDeploymentConfigKeys(): string[] {
