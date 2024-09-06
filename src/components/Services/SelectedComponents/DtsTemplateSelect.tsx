@@ -1,5 +1,5 @@
 import React, { ChangeEvent } from 'react';
-import { TemplateInfo } from './DtsViewEdit';
+import { TemplateInfo } from '../DtsViewEdit';
 
 export interface DtsTemplateSelect {
 	idinurl: string
@@ -12,7 +12,7 @@ export interface DtsTemplateSelect {
 	selectedOptionCollection: string
 }
 
-const DtsTemplateSelect: React.FC<DtsTemplateSelect> = ({
+export const DtsTemplateSelect: React.FC<DtsTemplateSelect> = ({
 	idinurl,
 	selectedOption,
 	handleChange,

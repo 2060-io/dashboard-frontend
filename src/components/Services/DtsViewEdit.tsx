@@ -9,8 +9,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import {v4 as uuidv4} from 'uuid';
 import Ajv from 'ajv';
 import { load, dump } from 'js-yaml';
-import DtsCollectionSelect from './DtsCollectionSelect';
-import DtsTemplateSelect from './DtsTemplateSelect';
+import {DtsCollectionSelect, DtsTemplateSelect} from "./index";
 
 type ApiGitHub = {
   name: string;
@@ -40,6 +39,8 @@ function DtsViewEdit() {
   const auth = useAuth();
   const pathname = usePathname()
   const router = useRouter();
+  const templateBranch = 'main';
+  const [templateDir, setTemplateDir] = useState<string>('');
 
   const [dtsTemplateVOs, setDtsTemplateVOs] = useState<DtsTemplateVO[]>([]);
   const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
@@ -75,7 +76,7 @@ function DtsViewEdit() {
   const handleChange = async (e: ChangeEvent<HTMLSelectElement>) => {
     setSelectedOption(e.target.value);
     setIsOptionSelected(true);
-    const newValue = await readGithubValue(`${process.env.NEXT_PUBLIC_TEMPLATE_DIR}/${process.env.NEXT_PUBLIC_TEMPLATE_BRANCH}/${e.target.value}/template.yml`);
+    const newValue = await readGithubValue(`${templateDir}/${templateBranch}/${e.target.value}/template.yml`);
     setDtsTemplateVOs(dtsTemplateVOs.map((item) => {
       if (item?.id === dtsVO?.templateFk) {
         return { ...item, yaml: newValue };
@@ -124,7 +125,7 @@ function DtsViewEdit() {
     try {
       const template = getTemplateInfo(templateSelected)
       
-      const file: SchemaConfig = JSON.parse(await readGithubValue(`${template?.schema}/${process.env.NEXT_PUBLIC_TEMPLATE_BRANCH}/${template?.name}/Setup/schema_dir.json`)) as SchemaConfig;
+      const file: SchemaConfig = JSON.parse(await readGithubValue(`${template?.schema}/${templateBranch}/${template?.name}/Setup/schema_dir.json`)) as SchemaConfig;
       if(file && file.config && typeof file.config === 'object'){
         const ajv = new Ajv();
         const schemaDefault = await readGithubValue(`${file.config.path}/${file.config.branch}/schema.json`);
@@ -181,6 +182,7 @@ function DtsViewEdit() {
   const listTemplateNames = async (idCollection: string) => {
     try {
       const dtsCollection: DtsCollectionVO = getDtsCollection(idCollection);
+      setTemplateDir(`${dtsCollection.template}/${dtsCollection.templateRepo}`);
 
       if(0 === Object.entries(dtsCollection).length){
         return;
@@ -217,9 +219,10 @@ function DtsViewEdit() {
       let deploymentConfig = '';
       const template = getTemplateInfo(value);
       const dtsCollection = getDtsCollection(selectedOptionCollection);
+      setTemplateDir(`${dtsCollection.template}/${dtsCollection.templateRepo}`);
   
       const createTemplatePath = (subPath = '') =>
-        `${dtsCollection.template}/${dtsCollection.templateRepo}/${process.env.NEXT_PUBLIC_TEMPLATE_BRANCH}/${template?.name}${subPath}`;
+        `${dtsCollection.template}/${dtsCollection.templateRepo}/${templateBranch}/${template?.name}${subPath}`;
   
       deploymentConfig = await readGithubValue(createTemplatePath('/values.yaml'));
   
