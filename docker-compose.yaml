@@ -13,9 +13,6 @@ services:
       - NEXT_PUBLIC_KEYCLOAK_REDIRECT_URI=http://localhost:8080/
       - NEXT_PUBLIC_KEYCLOAK_POST_LOGOUT_REDIRECT_URI=http://localhost:8080/
       - NEXT_PUBLIC_KEYCLOAK_PRES_REQ_CONF_ID=phone-number
-      - NEXT_PUBLIC_TEMPLATE_DIR=2060-io/dashboard-templates
-      - NEXT_PUBLIC_TEMPLATE_BRANCH=main
-      - NEXT_PUBLIC_TEMPLATE_SCHEMA_DIR=Fastbot/schema.yml
     networks:
       - vc_auth
 
