@@ -1,7 +1,7 @@
 "use client";
 
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import { DtsCollectionVO, DtsResourceApi } from './index'; 
+import { DtsCollectionVO, DtsResourceApi, DtstGetIdGetRequest } from './index'; 
 import { DtsTemplateVO, DtsVO, EntityState, DtsType } from './index';
 import { Configuration, ConfigurationParameters, DtsCollectionResourceApi, DtsTemplateResourceApi } from './index';
 import { useAuth } from "react-oidc-context";
@@ -45,7 +45,7 @@ function DtsViewEdit() {
   const [dtsTemplateVOs, setDtsTemplateVOs] = useState<DtsTemplateVO[]>([]);
   const [isOptionSelected, setIsOptionSelected] = useState<boolean>(false);
   const [templateNames, setTemplateNames] = useState<TemplateInfo[]>([]);
-  const [selectedOption, setSelectedOption] = useState<string>('');
+  const [selectedOption, setSelectedOption] = useState<string>('newTemplateFk');
   const [needsRefresh, setNeedsRefresh] = useState(false);
   const [errorDTSConf, setErrorDTSConf] = useState(false);
   const [errorName, setErrorName] = useState(false);
@@ -200,17 +200,31 @@ function DtsViewEdit() {
 
       templates = [...templates];     
       setTemplateNames(templates);
+      if("new" !== idinurl){
+        getTemplateCurrent(dtsVO.templateFk ?? '', templates);
+      }
     } catch (error) {
         console.error('Error fetching templates:', error);
     }
-}
+  }
+
+  const getTemplateCurrent = async (templateId: string, templates: TemplateInfo[]) => {
+    try {
+      const api = createDtsTemplateResourceApi();
+      const requestParameters: DtstGetIdGetRequest = { id: templateId };
+      const response = await api.dtstGetIdGet(requestParameters);
+  
+      const template = templates.find(templateInfo =>
+        response.name?.toLowerCase().includes(templateInfo.name.toLowerCase())
+      );
+  
+      setSelectedOption(template?.name ?? 'newTemplateFk');
+    } catch (error) {
+      console.error('Error fetching data template', error);
+    }
+  };
   
   const idinurl = pathname.replace("/services/", "");
-
-  function listDtsTemplateVOs() {
-    const apiDtst = createDtsTemplateResourceApi()
-    apiDtst.dtstListPost({}).then((resp) => setDtsTemplateVOs(prevState => [...prevState, ...resp]));
-  }
 
   const getValuesNewTemplate = async (value: string): Promise<void> => {
     try {
@@ -238,14 +252,15 @@ function DtsViewEdit() {
   };
 
   function getDtsVO() {
+    listDtsCollection();
     if ((idinurl === null) || (idinurl === "new")) {
       const id = uuidv4();
       setDtsVO({...dtsVO, name: "New Decentralized Trusted Service", id: uuidv4(), templateFk: id, debug: false})
       const newTemplate:DtsTemplateVO = {title: 'string', state: EntityState.Editing, yaml: 'string', name: "string", id: id, type: DtsType.ConversationalService}
       setDtsTemplateVOs([newTemplate]);
-    } else {
+    }
+    else {
       const api = createDtsResourceApi()
-      
       api.dtsGetIdGet({ id: idinurl}).then((resp) => {
         if (resp) {
           setDtsVO(resp);
@@ -253,7 +268,6 @@ function DtsViewEdit() {
         } else {
           setDtsVO({...dtsVO, name: "New Decentralized Trusted Service", id: uuidv4()})
         }
-        
       });
     }
   }
@@ -261,23 +275,15 @@ function DtsViewEdit() {
   useEffect(() => {
     if (auth.isAuthenticated) {
       getDtsVO();
-      listDtsTemplateVOs();
-      listDtsCollection();
     }
-}, [auth, needsRefresh]);
+  }, [auth, needsRefresh]);
 
-useEffect(() => {
-  if('' == selectedOption || 'newTemplateFk' == selectedOption){
-    setSelectedOption(getNameTemplateCurrent())
-    dtsVO.collectionFk && listTemplateNames(dtsVO.collectionFk)
-  }
-  else{
-    if(idinurl === "new"){
-      getValuesNewTemplate(selectedOption)
+  useEffect(() => {
+    if(dtsVO.collectionFk){
+      setSelectedOptionCollection(dtsVO.collectionFk);
+      listTemplateNames(dtsVO.collectionFk);
     }
-  }
-  dtsVO.collectionFk && setSelectedOptionCollection(dtsVO.collectionFk)
-});
+  }, [dtsVO]);
 
   function getDeploymentConfigKeys(): string[] {
     const deploymentConfig = dtsVO?.deploymentConfig ? load(String(dtsVO.deploymentConfig)) : null;
@@ -306,8 +312,10 @@ useEffect(() => {
     }
 
     try {
-      await saveDtsTemplateVO()
-      await api.dtsSavePost({ dtsVO: dtsVO });
+      if('' !== dtsVO.collectionFk){
+        await saveDtsTemplateVO()
+        await api.dtsSavePost({ dtsVO: dtsVO });
+      }
     } catch (error) {
       console.error(error)
     }
@@ -331,30 +339,9 @@ useEffect(() => {
   }
 
   const isMatchNameServiceWithNameTemplate = (nameTemplate: string): boolean => {
-    let match = false;
-    const wordsNameService = dtsVO.name?.toLowerCase().split(' ');
-    const wordsNameTemplate = nameTemplate.toLowerCase().split(' ');
-    wordsNameTemplate.forEach((name: string) => {
-      if(wordsNameService?.includes(name)){
-        match = true
-      }
-    })
-    return match;
-  }
-
-  const getNameTemplateCurrent = () => {
-    let nameTemplate = 'newTemplateFk';
-    const wordsNameService = dtsVO.name?.toLowerCase().split(' ');
-    templateNames.forEach((template: TemplateInfo) => {
-      const wordsNameTemplate = template.name.toLowerCase().split(' ');
-      wordsNameTemplate.forEach((word: string) => {
-        if(wordsNameService?.includes(word)){
-          nameTemplate = template.name
-        }
-      })
-    })
-    
-    return nameTemplate;
+    const nameService = dtsVO.name?.toLowerCase();
+    const lowerCaseNameTemplate = nameTemplate.toLowerCase();
+    return nameService?.includes(lowerCaseNameTemplate) ?? false;
   }
 
   function camelCaseToLabelCase(str: string) {

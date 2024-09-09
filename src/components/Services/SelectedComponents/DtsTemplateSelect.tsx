@@ -28,7 +28,7 @@ export const DtsTemplateSelect: React.FC<DtsTemplateSelect> = ({
     rounded border border-stroke bg-transparent px-5 py-3 outline-none transition
     focus:border-primary active:border-primary dark:border-form-strokedark dark:bg-form-input dark:focus:border-primary
     ${isOptionSelected ? "text-black dark:text-white" : "bg-red-200 placeholder-gray-3"}
-    ${isDisabled ? "opacity-50 cursor-not-allowed bg-gray-200 text-gray-500 border-gray-300" : ""}
+    ${isDisabled ? "opacity-50 cursor-not-allowed bg-gray-200 text-gray-500 border-gray-300" : "text-black dark:text-white"}
   `;
 
 	return (

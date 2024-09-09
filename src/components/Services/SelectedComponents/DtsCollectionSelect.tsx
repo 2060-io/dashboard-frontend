@@ -20,12 +20,12 @@ export const DtsCollectionSelect: React.FC<DtsCollectionSelect> = ({
     rounded border border-stroke
     bg-transparent dark:bg-form-input
     px-5 py-3
-    dark:text-white
     outline-none
     transition
     focus:border-primary dark:focus:border-primary
     active:border-primary
     dark:border-form-strokedark
+	${selectedOptionCollection ? "text-black dark:text-white" : "placeholder-gray-3"}
     ${isDisabled ? "opacity-50 cursor-not-allowed bg-gray-200 text-gray-500 border-gray-300" : ""}
   `;
 
