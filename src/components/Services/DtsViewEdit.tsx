@@ -137,7 +137,7 @@ function DtsViewEdit() {
           setErrorDTSConf(false)
         } else {
           setErrorDTSConf(true)
-          console.log('Errores de validación:', validate.errors);
+          console.log('validateSchemaDtsConfig: Error:', validate.errors);
         }
       }
     } catch (error) {
