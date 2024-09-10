@@ -18,7 +18,8 @@ const Sidebar = ({ sidebarOpen, setSidebarOpen }: SidebarProps) => {
   const pathnames: string [] = [
     'dashboard',
     '/services',
-    '/templates'
+    '/templates',
+    '/services/new'
   ]
 
   const trigger = useRef<any>(null);

@@ -24,18 +24,5 @@ echo "Check that we have NEXT_PUBLIC_KEYCLOAK_PRES_REQ_CONF_ID vars"
 test -n "$NEXT_PUBLIC_KEYCLOAK_PRES_REQ_CONF_ID"
 find /app/.next \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i "s#APP_NEXT_PUBLIC_KEYCLOAK_PRES_REQ_CONF_ID#$NEXT_PUBLIC_KEYCLOAK_PRES_REQ_CONF_ID#g"
 
-echo "Check that we have NEXT_PUBLIC_TEMPLATE_DIR vars"
-test -n "$NEXT_PUBLIC_TEMPLATE_DIR"
-find /app/.next \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i "s#APP_NEXT_PUBLIC_TEMPLATE_DIR#$NEXT_PUBLIC_TEMPLATE_DIR#g"
-
-echo "Check that we have NEXT_PUBLIC_TEMPLATE_BRANCH vars"
-test -n "$NEXT_PUBLIC_TEMPLATE_BRANCH"
-find /app/.next \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i "s#APP_NEXT_PUBLIC_TEMPLATE_BRANCH#$NEXT_PUBLIC_TEMPLATE_BRANCH#g"
-
-echo "Check that we have NEXT_PUBLIC_TEMPLATE_SCHEMA_DIR vars"
-test -n "$NEXT_PUBLIC_TEMPLATE_SCHEMA_DIR"
-find /app/.next \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i "s#APP_NEXT_PUBLIC_TEMPLATE_SCHEMA_DIR#$NEXT_PUBLIC_TEMPLATE_SCHEMA_DIR#g"
-
-
 echo "Starting Nextjs"
 exec "$@"

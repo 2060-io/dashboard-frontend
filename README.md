@@ -32,9 +32,6 @@ For the successful development of the project, it is essential to use the follow
 - `NEXT_PUBLIC_KEYCLOAK_REDIRECT_URI`: Redirect URL once authentication is successful.
 - `NEXT_PUBLIC_KEYCLOAK_POST_LOGOUT_REDIRECT_URI`: Redirect URL once logout is successful.
 - `NEXT_PUBLIC_KEYCLOAK_PRES_REQ_CONF_ID`: Additional variable used for the frontend to interact with the correct identity provider.
-- `NEXT_PUBLIC_TEMPLATE_DIR`: Directory of templates repository.
-- `NEXT_PUBLIC_TEMPLATE_BRANCH`: Branch in the templates repository.
-- `NEXT_PUBLIC_TEMPLATE_SCHEMA_DIR`: Location of the schema file for validating templates.
 
 ```.env
 NEXT_PUBLIC_BACKEND_BASE_PATH=https://orchestrator_example.2060.io
@@ -43,9 +40,4 @@ NEXT_PUBLIC_KEYCLOAK_CLIENT_ID=frontend-example
 NEXT_PUBLIC_KEYCLOAK_REDIRECT_URI=http://localhost:3000/
 NEXT_PUBLIC_KEYCLOAK_POST_LOGOUT_REDIRECT_URI=http://localhost:3000/
 NEXT_PUBLIC_KEYCLOAK_PRES_REQ_CONF_ID=email
-
-# Template repo
-NEXT_PUBLIC_TEMPLATE_DIR=2060-io/dashboard-templates
-NEXT_PUBLIC_TEMPLATE_BRANCH=main
-NEXT_PUBLIC_TEMPLATE_SCHEMA_DIR=Fastbot/schema_dir.json
 ```
